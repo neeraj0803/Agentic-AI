@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 
 from .api.context_api import router as context_router
-from .api.document_api import router as document_router
 app = FastAPI()
 
 
