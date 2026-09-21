@@ -22,7 +22,18 @@ class ContextAnalyzerPrompt:
 
         Return ONLY VALID JSON.
 
+        Expected Output:
+        {{
+            "problem_statement": "",
+            "business_goal": "",
+            "evidence": [],
+            "users": [],
+            "assumptions": [],
+            "constraints": []
+        }}
+
         Document:
 
         {document_text}
         """
+

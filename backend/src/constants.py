@@ -1,0 +1,1 @@
+DOCUMENT_UPLOAD_PATH = "workspace/uploads"

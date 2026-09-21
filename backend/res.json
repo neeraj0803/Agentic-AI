@@ -1,0 +1,52 @@
+[
+{
+  "problem_statement": "Employees experience difficulty locating relevant enterprise documents, leading to reduced productivity, delayed issue resolution, and increased dependency on support teams. The current search experience lacks semantic understanding, resulting in low search relevance and inefficient knowledge discovery.",
+  "business_goal": "Improve the enterprise knowledge discovery experience by enabling intelligent document search and retrieval capabilities.",
+  "evidence": [
+    "70% of surveyed employees stated they struggle to find relevant documents.",
+    "Employees reported frequently searching multiple repositories before locating required information.",
+    "Support engineers indicated they often re-answer questions that are already documented.",
+    "Approximately 300 search-related support tickets are raised each month.",
+    "Average document search session duration is 8 minutes.",
+    "Current search success rate is 45%.",
+    "Time spent searching reduces productive work hours.",
+    "Repeated support requests increase workload on support teams.",
+    "Delays in finding information can impact customer issue resolution timelines."
+  ],
+  "users": [
+    "Employees",
+    "Support Engineers",
+    "Operations Teams",
+    "Knowledge Content Owners",
+    "Business Analysts"
+  ],
+  "assumptions": [
+    "Enterprise documents already exist within approved repositories.",
+    "Repository access permissions are correctly configured.",
+    "Existing repositories expose required metadata.",
+    "Employees will continue using existing repositories."
+  ],
+  "constraints": [
+    "Delivery must be completed within 8 weeks.",
+    "No additional software licensing costs are approved.",
+    "Solution must integrate with existing repositories.",
+    "Existing security and access control mechanisms must be preserved."
+  ]
+},
+{
+  "evidence_strength": "",
+  "confidence_score": 0,
+  "business_impact": [],
+  "missing_evidence": [],
+  "analysis_summary": ""
+},
+{
+  "problem": "",
+  "users": [],
+  "needs": [],
+  "expected_impact": [],
+  "scope": {},
+  "assumptions": [],
+  "constraints": []
+}
+]

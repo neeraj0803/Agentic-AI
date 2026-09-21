@@ -7,7 +7,7 @@ flowchart TD
 
     C[2. Context Analyzer<br/>Extract:<br/>• Problem Statement<br/>• Business Goal<br/>• Evidence<br/>• Users<br/>• Assumptions<br/>• Constraints]
 
-    D[3. Evidence Analyzer<br/>Validate Evidence<br/>Assess Context Quality]
+    D[3. Gap Analyzer<br/>Assess Context Quality <br/>Validate Missing Context & Gaps]
 
     E{Context & Evidence<br/>Sufficient?}
 
