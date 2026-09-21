@@ -15,8 +15,4 @@ app.include_router(
     prefix="/context",
     tags=["Context Analyzer"]
 )
-app.include_router(
-    document_router,
-    prefix="/document",
-    tags=["Document Analyzer"]
-)
+
