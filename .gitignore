@@ -2,5 +2,6 @@ backend/.venv
 backend/src/__pycache__
 backend/src/*/__pycache__
 backend/src/.env
+backend/src/.env.example
 backend/src/*/*/__pycache__
 backend/workspace
