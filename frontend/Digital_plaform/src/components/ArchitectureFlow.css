@@ -1,0 +1,15 @@
+.architecture-page { width: 100%; height: 100vh; display: flex; flex-direction: column; background: #f7f9fc; color: #202832; }
+.architecture-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 42px 24px; border-bottom: 1px solid #dce2eb; background: #fff; }
+.architecture-kicker { margin: 0 0 8px; color: #2459d6; font: 600 10px 'DM Mono', monospace; letter-spacing: .12em; text-transform: uppercase; }
+.architecture-header h1 { margin: 0; font-size: clamp(22px, 3vw, 32px); letter-spacing: -.04em; }
+.architecture-header p:last-child { margin: 8px 0 0; color: #778292; font-size: 13px; }
+.architecture-back { flex: 0 0 auto; padding: 10px 14px; border: 1px solid #d5dce7; border-radius: 7px; color: #2459d6; background: #fff; font-size: 12px; text-decoration: none; }
+.architecture-back:hover { border-color: #2459d6; background: #f1f5ff; }
+.architecture-canvas { position: relative; flex: 1 1 auto; width: 100%; min-height: 500px; height: calc(100vh - 124px); }
+.architecture-canvas .react-flow { width: 100%; height: 100%; }
+.architecture-canvas .react-flow__node { min-width: 172px; padding: 14px 16px; border: 1px solid #cdd6e3; border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgba(44, 58, 77, .08); color: #263241; font: 600 12px/1.45 'Manrope', sans-serif; white-space: pre-line; }
+.architecture-canvas .architecture-node-input { border-color: #91adf1; background: #f1f5ff; }
+.architecture-canvas .architecture-node-output { border-color: #e1b17c; background: #fff7ed; }
+.architecture-canvas .react-flow__edge-text { fill: #667386; font-size: 10px; }
+.architecture-canvas .react-flow__edge-textbg { fill: #f7f9fc; }
+@media (max-width: 700px) { .architecture-header { align-items: flex-start; flex-direction: column; padding: 22px; } .architecture-canvas { height: calc(100vh - 190px); } }
