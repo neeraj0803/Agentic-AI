@@ -11,29 +11,183 @@
 <section class="board artboard" id="running"><aside class="nav"><div class="logo"><i>✦</i> agent portal</div><div class="team"><small>Active team</small><b>Knowledge Modernization⌄</b></div><div class="navsection">Workspace</div><div class="navitem"><span>◈</span> Discover agents</div><div class="navitem active"><span>⌘</span> Conversations</div><div class="navitem"><span>↺</span> Run history</div><div class="navitem"><span>▦</span> Knowledge sources</div><div class="profile"><div class="avatar">AR</div><div><b>Alex Rivera</b><small>Authorized user</small></div></div></aside><main class="main"><header class="top"><div><h1>Q3 onboarding context</h1><p>Context Analyzer · Run #KM-2481 · started just now</p></div><div class="actions"><button class="btn">Pause</button><button class="btn" style="color:#aa5548">Cancel run</button></div></header><div class="content"><div class="eyebrow">Conversation / live execution</div><div class="row"><div><h2>Building your context brief</h2><p>Partial results are available as each stage completes.</p></div><div class="status" style="font-size:10px;background:#e7efff;color:#2860d2">● Processing 68%</div></div><div class="runlayout"><div class="stream"><div class="streamhead"><b>Execution timeline</b><span class="live">Live updates</span></div><div class="timeline"><div class="step"><div class="dot">✓</div><div><b>Input validation completed</b><small>2 files accepted · 14.8 MB · 4 seconds ago</small></div></div><div class="step"><div class="dot">✓</div><div><b>Searching team knowledge</b><small>36 relevant passages found across 4 sources</small></div></div><div class="step"><div class="dot blue">↻</div><div><b>Analyzing evidence and constraints</b><small>Extracting themes and confidence signals...</small></div></div><div class="step"><div class="dot" style="background:#f3f4f1;color:#9da29b">4</div><div><b style="color:#a0a39e">Preparing structured result</b><small>Waiting for analysis to complete</small></div></div></div><div class="output"><div class="tabs"><div class="tab sel">Markdown</div><div class="tab">Evidence table</div><div class="tab">JSON</div><div class="tab">Sources (12)</div></div><pre class="code"><span class="tok">## Problem statement</span>\n\nThe onboarding journey is fragmented across ...\n\n<span class="tok">### Emerging evidence</span>\n\n| Signal | Confidence | Source |\n|---|---:|---|\n| ... | 0.86 | handbook.pdf |</pre></div></div><aside class="runaside"><div class="panel"><h3>Run progress</h3><div class="progress"><i></i></div><div class="metric"><span>Completed</span><b>3 of 4 stages</b></div><div class="metric"><span>Elapsed</span><b>00:42</b></div><div class="metric"><span>Tokens</span><b>8,420</b></div></div><div class="panel"><h3>Inputs</h3><p class="sub" style="margin-top:8px">2 attached files</p><div class="kv"><span>onboarding.pdf</span><b>8.2 MB</b></div><div class="kv"><span>survey.xlsx</span><b>6.6 MB</b></div><div class="notice" style="background:#f3f5ef;color:#697266">You can continue this conversation while the run completes.</div></div></aside></div></div></main></section>
 <section class="board artboard" id="history"><aside class="nav"><div class="logo"><i>✦</i> agent portal</div><div class="team"><small>Active team</small><b>Knowledge Modernization⌄</b></div><div class="navsection">Workspace</div><div class="navitem"><span>◈</span> Discover agents</div><div class="navitem"><span>⌘</span> Conversations</div><div class="navitem active"><span>↺</span> Run history</div><div class="navitem"><span>▦</span> Knowledge sources</div><div class="profile"><div class="avatar">AR</div><div><b>Alex Rivera</b><small>Authorized user</small></div></div></aside><main class="main"><header class="top"><div><h1>Run history</h1><p>Inspect previous team-scoped executions, outputs and usage.</p></div><div class="actions"><button class="btn">Export CSV</button><button class="btn primary">＋ New conversation</button></div></header><div class="content"><div class="eyebrow">Knowledge Modernization / 27 runs</div><div class="row"><div><h2>Recent executions</h2><p>Results and artifacts remain available according to your team retention policy.</p></div><div class="search">⌕ &nbsp; Search runs</div></div><div class="filters"><div class="filter">All agents⌄</div><div class="filter">All statuses⌄</div><div class="filter">Last 30 days⌄</div></div><div class="historytable"><div class="th"><div>Run</div><div>Agent</div><div>Status</div><div>Usage</div><div>Actions</div></div><div class="tr"><div><b>Q3 onboarding context</b><small>Today · 10:42 AM · KM-2481</small></div><div>Context Analyzer<small>v2.4</small></div><div><span class="ok">Completed</span></div><div class="money">$0.08<small>12.4k tokens</small></div><div class="download">↧ &nbsp;⋯</div></div><div class="tr"><div><b>Checkout PRD review</b><small>Yesterday · 4:18 PM · KM-2478</small></div><div>PRD Reviewer<small>v1.5</small></div><div><span class="ok">Completed</span></div><div class="money">$0.14<small>21.8k tokens</small></div><div class="download">↧ &nbsp;⋯</div></div><div class="tr"><div><b>Legacy API evidence map</b><small>Sep 21 · 1:06 PM · KM-2469</small></div><div>Evidence Analyzer<small>v1.8</small></div><div><span class="ok">Completed</span></div><div class="money">$0.21<small>34.1k tokens</small></div><div class="download">↧ &nbsp;⋯</div></div><div class="tr"><div><b>Payments requirements draft</b><small>Sep 19 · 9:30 AM · KM-2454</small></div><div>PRD Generator<small>v3.1</small></div><div><span class="ok" style="background:#f7eadf;color:#a06039">Cancelled</span></div><div class="money">$0.03<small>4.2k tokens</small></div><div class="download">↧ &nbsp;⋯</div></div><div class="tr"><div><b>Returns journey assumptions</b><small>Sep 17 · 3:52 PM · KM-2441</small></div><div>Context Analyzer<small>v2.4</small></div><div><span class="ok">Completed</span></div><div class="money">$0.11<small>18.5k tokens</small></div><div class="download">↧ &nbsp;⋯</div></div></div></div></main></section>
 <script>
+function setupLoginAndDashboard(){
+ const style=document.createElement('style');
+ style.textContent='.login-board{align-items:center;justify-content:center;background:#f5f6f3}.login-shell{width:430px;background:#fff;border:1px solid #e0e2dd;border-radius:12px;padding:38px 40px;box-shadow:0 18px 45px rgba(36,39,42,.1)}.login-brand{display:flex;align-items:center;gap:10px;color:#24252a;font-size:20px;font-weight:800;letter-spacing:-.05em;margin-bottom:34px}.login-brand i{width:31px;height:31px;border-radius:9px;background:#d6ef55;display:grid;place-items:center;font-style:normal;font-size:17px}.login-kicker{margin:0 0 9px;color:#2860d2;font:500 10px "DM Mono",monospace;letter-spacing:.13em;text-transform:uppercase}.login-shell h1{margin:0;font-size:25px;letter-spacing:-.06em}.login-copy{margin:8px 0 27px;color:#858982;font-size:12px;line-height:1.6}.login-field{margin-bottom:15px}.login-field label{display:block;margin-bottom:7px;color:#565b57;font-size:10px;font-weight:700}.login-field input{width:100%;border:1px solid #d8dad5;border-radius:7px;background:#fbfbfa;padding:11px 12px;color:#292c2b;font:12px Manrope;outline:0}.login-field input:focus{border-color:#2860d2;box-shadow:0 0 0 3px rgba(40,96,210,.12)}.login-options{display:flex;justify-content:space-between;align-items:center;margin:6px 0 21px;color:#8a8e88;font-size:10px}.login-options a{color:#2860d2;text-decoration:none}.login-submit{width:100%;background:#2860d2;color:#fff;border:0;border-radius:7px;padding:12px;font:700 11px Manrope;cursor:pointer}.login-submit:hover{background:#1e4fae}.login-divider{display:flex;align-items:center;gap:10px;margin:22px 0;color:#b0b3ad;font-size:9px}.login-divider:before,.login-divider:after{content:"";height:1px;flex:1;background:#e8e9e5}.login-sso{width:100%;border:1px solid #d8dad5;border-radius:7px;background:#fff;color:#5d625c;padding:10px;font:600 10px Manrope;cursor:pointer}.login-footer{margin:23px 0 0;text-align:center;color:#a0a49d;font-size:9px;line-height:1.5}.login-footer b{color:#697266;font-weight:600}';
+ document.head.appendChild(style);
+ style.textContent+='.user-context{display:flex;align-items:center;gap:9px;margin-right:8px;padding:7px 10px;border:1px solid #e0e2dd;border-radius:8px;background:#fff}.user-context .avatar{width:25px;height:25px}.user-context strong{display:block;color:#3e433e;font-size:10px}.user-context small{display:block;margin-top:2px;color:#8c9189;font-size:9px}.user-context .verified{color:#68811f;font:500 9px "DM Mono",monospace}.logout-button{margin-left:auto;padding:5px 7px;border:1px solid #e0e2dd;border-radius:5px;background:#fff;color:#8b6058;font:600 9px Manrope;cursor:pointer}.logout-button:hover{border-color:#c8877d;background:#fff7f5}.dashboard-search{display:flex;align-items:center;gap:7px;width:260px}.dashboard-search input{width:100%;border:0;outline:0;background:transparent;color:#4f544f;font:11px Manrope}.dashboard-search input::placeholder{color:#a1a49d}.no-results{grid-column:1/-1;padding:34px;text-align:center;color:#92968f;background:#fff;border:1px dashed #d8dad5;border-radius:10px;font-size:12px}.run-paused{background:#fff5d9!important;color:#967226!important}.run-cancelled{background:#f7eadf!important;color:#a06039!important}.retry-button{color:#2860d2!important;border-color:#b7c8ed!important}.agent-chooser{display:none;position:fixed;inset:0;z-index:10;align-items:center;justify-content:center;background:rgba(34,37,43,.35)}.agent-chooser.open{display:flex}.agent-chooser-panel{width:500px;background:#fff;border:1px solid #e0e2dd;border-radius:11px;padding:24px;box-shadow:0 20px 55px rgba(36,39,42,.2)}.agent-chooser-panel h3{margin:0;font-size:17px;letter-spacing:-.04em}.agent-chooser-panel p{margin:6px 0 18px;color:#858982;font-size:11px}.agent-option{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;padding:13px;border:1px solid #e0e2dd;border-radius:8px;background:#fff;text-align:left;cursor:pointer}.agent-option:hover{border-color:#2860d2;background:#f4f7ff}.agent-option .glyph{flex:0 0 37px}.agent-option strong{display:block;color:#292c2b;font-size:12px}.agent-option small{display:block;margin-top:4px;color:#8b9089;font-size:10px}.agent-chooser-close{float:right;border:0;background:transparent;color:#8b9089;font-size:18px;cursor:pointer}.conversation-list{display:flex;flex-direction:column;gap:9px}.conversation-row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:16px 18px;border:1px solid #e1e2de;border-radius:9px;background:#fff;cursor:pointer}.conversation-row:hover{border-color:#9eb5e8;background:#f8faff}.conversation-row h3{margin:0 0 5px;font-size:13px}.conversation-row p{margin:0;color:#858982;font-size:10px}.conversation-meta{text-align:right}.conversation-meta small{display:block;color:#9a9e98;font-size:9px;margin-bottom:7px}.conversation-status{display:inline-block;padding:5px 7px;border-radius:100px;background:#edf5d7;color:#68811f;font:500 9px "DM Mono",monospace}.conversation-status.live{background:#e7efff;color:#2860d2}.conversation-status.draft{background:#f3f4f1;color:#888d85}.conversation-empty{padding:32px;text-align:center;color:#90958e}.back-dashboard{display:flex;align-items:center;gap:7px;width:100%;margin:0 0 22px;padding:9px 10px;border:1px solid #40444e;border-radius:7px;background:#2b2f36;color:#d7dbe2;text-align:left;font:600 10px Manrope;cursor:pointer}.back-dashboard:hover{border-color:#9eb5e8;color:#fff;background:#353a43}';
+ document.querySelector('#discover .top .actions').insertAdjacentHTML('afterbegin','<div class="user-context"><div class="avatar">DU</div><div><strong>demo.user</strong><small><span class="verified">● ForgeRock verified</span> · Knowledge Modernization</small></div><button class="logout-button" type="button">Logout</button></div>');
+ document.querySelectorAll('.profile').forEach((profile)=>profile.insertAdjacentHTML('beforeend','<button class="logout-button" type="button">Logout</button>'));
+ document.body.insertAdjacentHTML('afterbegin','<section class="board artboard" id="login"><div class="login-shell"><div class="login-brand"><i>✦</i> Digital Intelligence Hub</div><p class="login-kicker">Secure enterprise access</p><h1>Sign in to your workspace</h1><p class="login-copy">Use your ForgeRock credentials to access agents and knowledge sources enabled for your team.</p><form id="login-form"><div class="login-field"><label for="login-email">Work email</label><input id="login-email" type="email" placeholder="name@company.com" required></div><div class="login-field"><label for="login-password">Password</label><input id="login-password" type="password" placeholder="Enter your password" required></div><div class="login-options"><label><input type="checkbox"> Remember me</label><a href="#login">Forgot password?</a></div><button class="login-submit" type="submit">Sign in with ForgeRock</button></form><div class="login-divider">or</div><button class="login-sso" type="button" id="sso-button">Continue with company SSO</button><p class="login-footer">Protected by <b>ForgeRock Identity Cloud</b><br>Access is based on your active team permissions.</p></div></section>');
+ document.body.insertAdjacentHTML('beforeend','<div class="agent-chooser" id="agent-chooser"><div class="agent-chooser-panel"><button class="agent-chooser-close" type="button" aria-label="Close agent chooser">×</button><h3>Choose an authorized agent</h3><p>Select an agent to continue directly to its run configuration.</p><button class="agent-option" type="button" data-agent="PRD Generator" data-version="3.1"><span class="glyph">✎</span><span><strong>PRD Generator</strong><small>Creates requirements documents from Context, Confluence and Jira evidence.</small></span></button><button class="agent-option" type="button" data-agent="Test Case Analysis" data-version="1.0"><span class="glyph">✓</span><span><strong>Test Case Analysis</strong><small>Finds coverage gaps and recommends test cases from authorized sources.</small></span></button></div></div>');
+ document.body.insertAdjacentHTML('beforeend','<section class="board artboard" id="conversations"><aside class="nav"><div class="logo"><i>✦</i> agent portal</div><div class="team"><small>Active team</small><b>Knowledge Modernization⌄</b></div><div class="navsection">Workspace</div><div class="navitem"><span>◈</span> Discover agents</div><div class="navitem active"><span>⌘</span> Conversations</div><div class="navitem"><span>↺</span> Run history</div><div class="navitem"><span>▦</span> Knowledge sources</div><div class="profile"><div class="avatar">AR</div><div><b>Alex Rivera</b><small>Authorized user</small></div></div></aside><main class="main"><header class="top"><div><h1>Conversations</h1><p>Continue team-scoped work with an authorized agent.</p></div><div class="actions"><div class="search conversation-search">⌕ &nbsp; Search conversations</div><button class="btn primary conversation-new">＋ New conversation</button></div></header><div class="content"><div class="eyebrow">Knowledge Modernization / 03 conversations</div><div class="row"><div><h2>Continue where you left off</h2><p>Open a conversation to review context, files, results and active runs.</p></div></div><div class="conversation-list"><article class="conversation-row" data-target="running"><div><h3>Q3 onboarding context</h3><p>Context Analyzer · Context + Confluence · 2 files · Updated today at 10:42 AM</p></div><div class="conversation-meta"><small>KM-2481</small><span class="conversation-status live">Running</span></div></article><article class="conversation-row" data-target="invoke"><div><h3>Checkout requirements review</h3><p>PRD Generator · Jira + Confluence · 5 messages · Updated yesterday at 4:18 PM</p></div><div class="conversation-meta"><small>KM-2478</small><span class="conversation-status">Completed</span></div></article><article class="conversation-row" data-target="invoke"><div><h3>Payments test coverage</h3><p>Test Case Analysis · Jira · Draft saved yesterday at 1:06 PM</p></div><div class="conversation-meta"><small>Draft</small><span class="conversation-status draft">Draft</span></div></article></div></div></main></section>');
+ document.querySelectorAll('#conversations .nav, #invoke .nav, #running .nav, #history .nav').forEach((nav)=>nav.insertAdjacentHTML('afterbegin','<button class="back-dashboard" type="button">⌂ Back to dashboard</button><button class="back-dashboard back-previous" type="button">← Back</button>'));
+ document.querySelector('#login-email').type='text';
+ document.querySelector('label[for="login-email"]').textContent='Login ID';
+ document.querySelector('#login-email').placeholder='demo.user';
+ document.querySelector('#login-email').value='demo.user';
+ document.querySelector('#login-password').value='DigitalHub123';
+ const cards=document.querySelector('#discover .cards');
+ if(cards){cards.innerHTML='<article class="card"><div class="cardtop"><div class="glyph">✎</div><div class="status">Available</div></div><h3>PRD Generator</h3><p>Create a complete product requirements document from validated Context, Confluence and Jira evidence.</p><div class="chips"><span class="chip">Markdown</span><span class="chip">DOCX</span><span class="chip">Context</span></div><div class="cardfoot"><span>v3.1 · approved</span><b>Use agent →</b></div></article><article class="card"><div class="cardtop"><div class="glyph">✓</div><div class="status">Available</div></div><h3>Test Case Analysis</h3><p>Analyze requirements and source evidence to identify coverage gaps, risks and recommended test cases.</p><div class="chips"><span class="chip">Jira</span><span class="chip">Confluence</span><span class="chip">JSON</span></div><div class="cardfoot"><span>v1.0 · approved</span><b>Use agent →</b></div></article>';
+	const eyebrow=document.querySelector('#discover .eyebrow'); if(eyebrow) eyebrow.textContent='Team workspace / 02 available';
+	const searchBox=document.querySelector('#discover .search');
+	if(searchBox){searchBox.classList.add('dashboard-search');searchBox.innerHTML='<span>⌕</span><input id="agent-search" type="search" placeholder="Search agents or capabilities" aria-label="Search agents or capabilities">';}
+ }
+ const taskField=document.querySelector('#invoke .textarea');
+ if(taskField){const editor=document.createElement('textarea');editor.className='textarea';editor.placeholder=taskField.textContent.trim();editor.setAttribute('aria-label','Task description');taskField.replaceWith(editor)}
+ const jiraField=document.querySelector('#invoke .field:nth-of-type(2) .select');
+ if(jiraField){jiraField.setAttribute('role','button');jiraField.setAttribute('tabindex','0')}
+ document.querySelector('#login-form').addEventListener('submit',(event)=>{event.preventDefault();show('discover')});
+ document.querySelector('#sso-button').addEventListener('click',()=>show('discover'));
+}
+
+function selectAgent(agentName, version){
+ const header=document.querySelector('#invoke .top p');
+ const startButton=document.querySelector('#invoke .run');
+ const topStartButton=document.querySelector('#invoke .top .btn.primary');
+ const summaryRows=document.querySelectorAll('#invoke .summary .kv');
+ if(header) header.innerHTML=agentName+' <span style="color:#2860d2">· active version '+version+'</span>';
+ if(startButton){startButton.textContent='Start analysis ↗';startButton.disabled=false;startButton.classList.remove('choose-agent-button');startButton.classList.add('start-analysis')}
+ if(topStartButton){topStartButton.textContent='Start analysis ↗';topStartButton.disabled=false;topStartButton.classList.remove('choose-agent-button');topStartButton.classList.add('start-analysis')}
+ if(summaryRows[0]) summaryRows[0].querySelector('b').textContent=agentName;
+ if(summaryRows[1]) summaryRows[1].querySelector('b').textContent=version+' · approved';
+}
+
+function resetConversation(){
+ const header=document.querySelector('#invoke .top p');
+ const startButton=document.querySelector('#invoke .run');
+ const topStartButton=document.querySelector('#invoke .top .btn.primary');
+ const summaryRows=document.querySelectorAll('#invoke .summary .kv');
+ if(header) header.textContent='Choose an authorized agent to begin';
+ if(startButton){startButton.textContent='Choose an agent';startButton.disabled=false;startButton.classList.add('choose-agent-button');startButton.classList.remove('start-analysis')}
+ if(topStartButton){topStartButton.textContent='Choose an agent';topStartButton.disabled=false;topStartButton.classList.add('choose-agent-button');topStartButton.classList.remove('start-analysis')}
+ if(summaryRows[0]) summaryRows[0].querySelector('b').textContent='Not selected';
+ if(summaryRows[1]) summaryRows[1].querySelector('b').textContent='Select an agent';
+}
+
+function openAgentChooser(){document.querySelector('#agent-chooser')?.classList.add('open')}
+function closeAgentChooser(){document.querySelector('#agent-chooser')?.classList.remove('open')}
+
+let previousScreen='discover';
+let navigatingBack=false;
+
+function logout(){
+ show('login');
+}
+
+function filterAgents(query){
+ const normalized=query.trim().toLowerCase();
+ const cards=document.querySelectorAll('#discover .cards .card');
+ let visible=0;
+ cards.forEach((card)=>{const match=!normalized||card.textContent.toLowerCase().includes(normalized);card.style.display=match?'':'none';if(match) visible+=1});
+ let empty=document.querySelector('#discover .no-results');
+ if(!visible){if(!empty){document.querySelector('#discover .cards').insertAdjacentHTML('beforeend','<div class="no-results">No authorized agents match that search.</div>');}}
+ else if(empty) empty.remove();
+}
+
+function updateRunState(state){
+ const runScreen=document.querySelector('#running');
+ if(!runScreen) return;
+ const status=runScreen.querySelector('.row .status');
+ const timeline=runScreen.querySelector('.timeline');
+ const controls=runScreen.querySelector('.top .actions');
+ if(state==='paused'){
+  if(status){status.textContent='● Paused';status.classList.add('run-paused');status.classList.remove('run-cancelled')}
+  if(timeline) timeline.querySelector('.step:nth-child(3) small').textContent='Run paused by user. Resume when ready.';
+  if(controls) controls.querySelector('.pause-button').textContent='Resume';
+ }
+ if(state==='running'){
+  if(status){status.textContent='● Processing 68%';status.classList.remove('run-paused','run-cancelled')}
+  if(timeline) timeline.querySelector('.step:nth-child(3) small').textContent='Extracting themes and confidence signals...';
+  if(controls) controls.querySelector('.pause-button').textContent='Pause';
+ }
+ if(state==='cancelled'){
+  if(status){status.textContent='● Cancelled';status.classList.add('run-cancelled');status.classList.remove('run-paused')}
+  if(timeline) timeline.querySelector('.step:nth-child(3) small').textContent='Run cancelled by demo.user.';
+  if(controls){controls.querySelector('.pause-button').disabled=true;controls.querySelector('.cancel-button').textContent='Retry run';controls.querySelector('.cancel-button').classList.add('retry-button')}
+ }
+}
+
+function updateSourceSummary(){
+ const selected=document.querySelectorAll('#invoke .source-tab.active').length;
+ const rows=document.querySelectorAll('#invoke .summary .kv');
+ if(rows[2]) rows[2].querySelector('b').textContent=selected+' selected';
+}
+
+function saveDraft(){
+ const draft={
+  agent:document.querySelector('#invoke .summary .kv b')?.textContent||'Not selected',
+  task:document.querySelector('#invoke textarea')?.value||'',
+  sources:Array.from(document.querySelectorAll('#invoke .source-tab.active')).map((tab)=>tab.textContent.trim()),
+  savedAt:new Date().toLocaleTimeString(),
+ };
+ localStorage.setItem('digital-intelligence-hub-draft',JSON.stringify(draft));
+ const saveButton=document.querySelector('#invoke .save-draft');
+ if(saveButton){saveButton.textContent='Draft saved ✓';saveButton.classList.add('draft-saved');window.setTimeout(()=>{saveButton.textContent='Save draft';saveButton.classList.remove('draft-saved')},1800)}
+}
+
 function show(id){
-	document.querySelectorAll('.artboard').forEach((screen)=>screen.classList.remove('active'));
+	const current=document.querySelector('.artboard.active');
 	const target=document.getElementById(id)||document.getElementById('discover');
+	if(current && current.id!==target.id && !navigatingBack) previousScreen=current.id;
+	document.querySelectorAll('.artboard').forEach((screen)=>screen.classList.remove('active'));
 	target.classList.add('active');
 	history.replaceState(null,'','#'+(target.id));
 }
 
+function goBackToPreviousScreen(){
+	navigatingBack=true;
+	show(previousScreen);
+	navigatingBack=false;
+}
+
 function bindMockupInteractions(){
+	document.querySelectorAll('#running .top .actions .btn').forEach((button)=>{
+		if(button.textContent.trim()==='Pause') button.classList.add('pause-button');
+		if(button.textContent.includes('Cancel run')) button.classList.add('cancel-button');
+	});
+	document.querySelectorAll('.logout-button').forEach((button)=>button.addEventListener('click',logout));
+	document.querySelector('#agent-search')?.addEventListener('input',(event)=>filterAgents(event.target.value));
+	document.querySelector('#discover .actions .btn:not(.primary)')?.addEventListener('click',()=>document.querySelector('#agent-search')?.focus());
+	document.querySelectorAll('.choose-agent-button').forEach((button)=>button.addEventListener('click',openAgentChooser));
+	document.querySelectorAll('.start-analysis').forEach((button)=>button.addEventListener('click',()=>show('running')));
+	document.querySelector('.agent-chooser-close')?.addEventListener('click',closeAgentChooser);
+	document.querySelectorAll('.agent-option').forEach((option)=>option.addEventListener('click',()=>{selectAgent(option.dataset.agent||'PRD Generator',option.dataset.version||'3.1');closeAgentChooser()}));
+	document.querySelector('#running .pause-button')?.addEventListener('click',(event)=>{const button=event.currentTarget;const paused=button.textContent==='Pause';updateRunState(paused?'paused':'running')});
+	document.querySelector('#running .cancel-button')?.addEventListener('click',(event)=>{const button=event.currentTarget;if(button.textContent==='Retry run'){button.textContent='Cancel run';button.classList.remove('retry-button');document.querySelector('#running .pause-button').disabled=false;updateRunState('running')}else updateRunState('cancelled')});
 	document.querySelectorAll('.navitem').forEach((item)=>item.addEventListener('click',()=>{
 		const label=item.textContent.trim();
 		if(label.includes('Discover')) show('discover');
-		if(label.includes('Conversations')) show('invoke');
+		if(label.includes('Conversations')) show('conversations');
 		if(label.includes('Run history')) show('history');
 	}));
 
-	document.querySelectorAll('.cardfoot b').forEach((action)=>action.addEventListener('click',()=>show('invoke')));
+	document.querySelectorAll('.cardfoot b').forEach((action)=>action.addEventListener('click',()=>{
+		const agentName=action.closest('.card')?.querySelector('h3')?.textContent||'PRD Generator';
+		const version=agentName==='Test Case Analysis'?'1.0':'3.1';
+		selectAgent(agentName,version);
+		show('invoke');
+	}));
+	document.querySelector('#discover .actions .btn.primary')?.addEventListener('click',()=>{resetConversation();show('invoke')});
+	document.querySelector('.conversation-new')?.addEventListener('click',()=>{resetConversation();show('invoke')});
+	document.querySelectorAll('.conversation-row').forEach((conversation)=>conversation.addEventListener('click',()=>show(conversation.dataset.target||'invoke')));
+	document.querySelectorAll('.back-dashboard:not(.back-previous)').forEach((button)=>button.addEventListener('click',()=>show('discover')));
+	document.querySelectorAll('.back-previous').forEach((button)=>button.addEventListener('click',goBackToPreviousScreen));
+		const conversationSearch=document.querySelector('.conversation-search');
+		if(conversationSearch){conversationSearch.classList.add('dashboard-search');conversationSearch.innerHTML='<span>⌕</span><input id="conversation-search-input" type="search" placeholder="Search conversations" aria-label="Search conversations">';document.querySelector('#conversation-search-input')?.addEventListener('input',(event)=>{const query=event.target.value.toLowerCase().trim();document.querySelectorAll('.conversation-row').forEach((row)=>{row.style.display=!query||row.textContent.toLowerCase().includes(query)?'':'none'})})}
 	document.querySelectorAll('.btn.primary').forEach((action)=>action.addEventListener('click',()=>{
-		if(action.textContent.includes('Start')) show('running');
+		if(action.textContent.includes('Start analysis')){closeAgentChooser();show('running');return}
+		if(action.textContent.includes('Start')){closeAgentChooser();show('running');}
+		if(action.textContent.includes('New conversation')) show('invoke');
 	}));
 
 	document.querySelectorAll('.source-tab').forEach((tab)=>tab.addEventListener('click',()=>{
 		tab.classList.toggle('active');
+		updateSourceSummary();
 	}));
+	document.querySelector('#invoke .top .btn:not(.primary)')?.classList.add('save-draft');
+	document.querySelector('#invoke .save-draft')?.addEventListener('click',saveDraft);
+	document.querySelector('#invoke .field:nth-of-type(2) .select')?.addEventListener('click',(event)=>{event.currentTarget.textContent='KM project · select issue or board ⌄'});
 
 	document.querySelectorAll('.tab').forEach((tab)=>tab.addEventListener('click',()=>{
 		tab.parentElement.querySelectorAll('.tab').forEach((candidate)=>candidate.classList.remove('sel'));
@@ -41,6 +195,8 @@ function bindMockupInteractions(){
 	}));
 }
 
+setupLoginAndDashboard();
+resetConversation();
 bindMockupInteractions();
-show(location.hash.slice(1)||'discover');
+show(location.hash.slice(1)||'login');
 </script></body></html>
