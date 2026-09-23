@@ -6,11 +6,7 @@ import { ChatHeader } from './components/ChatHeader'
 import { ChatSidebar } from './components/ChatSidebar'
 import { MessageList } from './components/MessageList'
 import { WelcomeState } from './components/WelcomeState'
-<<<<<<< HEAD
 import { aiChatTransport, analyzeAttachedFile } from './services/aiService'
-=======
-import { aiChatTransport, analyzeFile, type ContextAnalysis } from './services/aiService'
->>>>>>> cdda542c48152bb39b0d0bbb988db7f874428d38
 import { RECENT_CHATS } from './constants/page'
 import './App.css'
 
@@ -24,19 +20,6 @@ const loadSessions = (): ChatSession[] => {
   } catch {
     return []
   }
-}
-
-const formatContextAnalysis = (fileName: string, analysis: ContextAnalysis) => {
-  const formatList = (label: string, values: string[]) => `${label}:\n${values.map((value) => `- ${value}`).join('\n')}`
-  return [
-    `Context analysis for ${fileName}`,
-    `Problem statement: ${analysis.problem_statement}`,
-    `Business goal: ${analysis.business_goal}`,
-    formatList('Evidence', analysis.evidence),
-    formatList('Users', analysis.users),
-    formatList('Assumptions', analysis.assumptions),
-    formatList('Constraints', analysis.constraints),
-  ].join('\n\n')
 }
 
 function App() {
@@ -127,7 +110,6 @@ function App() {
     event.preventDefault()
     const text = input.trim()
     if ((!text && files.length === 0 && fileLabels.length === 0) || isStreaming) return
-    const attachedFiles = [...files]
     const fileTransfer = files.length > 0 ? new DataTransfer() : undefined
     files.forEach((file) => fileTransfer?.items.add(file))
     setInput('')
@@ -136,7 +118,6 @@ function App() {
     setRecentPromptOverride(null)
     setRecentPromptSessionId(null)
 
-<<<<<<< HEAD
     if (files.length > 0) {
       setIsAnalyzing(true)
       let nextMessages = [...messages]
@@ -175,29 +156,6 @@ function App() {
       } finally {
         setIsAnalyzing(false)
       }
-=======
-    if (attachedFiles.length > 0) {
-      const promptText = [
-        text,
-        ...attachedFiles.map((file) => `Attached file: ${file.name}`),
-      ].filter(Boolean).join('\n')
-      setMessages((currentMessages) => [...currentMessages, {
-        id: crypto.randomUUID(),
-        role: 'user',
-        parts: [{ type: 'text', text: promptText }],
-      }])
-
-      const analyses = await Promise.all(attachedFiles.map(async (file) => ({
-        fileName: file.name,
-        analysis: await analyzeFile(file),
-      })))
-      const analysisText = analyses.map(({ fileName, analysis }) => formatContextAnalysis(fileName, analysis)).join('\n\n---\n\n')
-      setMessages((currentMessages) => [...currentMessages, {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        parts: [{ type: 'text', text: analysisText }],
-      }])
->>>>>>> cdda542c48152bb39b0d0bbb988db7f874428d38
       return
     }
 
