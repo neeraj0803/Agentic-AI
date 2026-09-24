@@ -1,7 +1,15 @@
-from google import genai
-from openai import AzureOpenAI
+try:
+    from google import genai
+except ImportError:  # pragma: no cover - optional dependency in free-tier envs
+    genai = None
+
+try:
+    from openai import AzureOpenAI
+except ImportError:  # pragma: no cover - optional dependency in free-tier envs
+    AzureOpenAI = None
 
 from ..config import settings
+
 
 class LLMService:
 
@@ -10,6 +18,9 @@ class LLMService:
 
     @classmethod
     def get_gemini_client(cls):
+
+        if genai is None:
+            raise ModuleNotFoundError("google-genai package is not installed.")
 
         if cls._gemini_client is None:
 
@@ -21,6 +32,9 @@ class LLMService:
 
     @classmethod
     def get_azure_client(cls):
+
+        if AzureOpenAI is None:
+            raise ModuleNotFoundError("openai package is not installed.")
 
         if cls._azure_client is None:
 

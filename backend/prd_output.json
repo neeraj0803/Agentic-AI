@@ -1,0 +1,31 @@
+{
+  "problem": "Employees cannot find trusted enterprise documents quickly.",
+  "users": [
+    "Employees",
+    "Support Engineers"
+  ],
+  "needs": [
+    "Find approved knowledge quickly",
+    "Reduce repeat support inquiries"
+  ],
+  "expected_impact": [
+    "Search time reduced by 50%",
+    "Support productivity improved"
+  ],
+  "scope": {
+    "in_scope": [
+      "Knowledge search",
+      "Search optimization"
+    ],
+    "out_of_scope": [
+      "Workflow automation outside knowledge retrieval"
+    ]
+  },
+  "assumptions": [
+    "Documents already exist in approved repositories."
+  ],
+  "constraints": [
+    "No additional licensing costs.",
+    "Delivery within 8 weeks."
+  ]
+}

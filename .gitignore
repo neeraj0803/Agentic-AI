@@ -5,3 +5,15 @@ backend/src/.env
 backend/src/.env.example
 backend/src/*/*/__pycache__
 backend/workspace
+
+# Antigravity Rules and Customizations (.md and config)
+AGENTS.md
+**/AGENTS.md
+GEMINI.md
+**/GEMINI.md
+**/SKILL.md
+.agents/
+.agent/
+_agents/
+_agent/
+.gemini/
