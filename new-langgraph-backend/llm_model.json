@@ -1,0 +1,20 @@
+{
+  "apiDetails": {
+    "apiKey": "f3d09a596c054ff49a60664c34088afd",
+    "apiType": "azure",
+    "apiVersion": "2025-01-01-preview",
+    "baseURL": "https://aes-gen-ai-internal.openai.azure.com",
+    "deploymentName": "gpt-4o-mini-developers",
+    "inputTokenCost": "0.00015",
+    "isBatch": "false",
+    "maxTokenSize": "128000",
+    "model": "gpt-4o-mini",
+    "outputTokenCost": "0.0006",
+    "temperature": "0.1",
+    "tokensPerMinute": "498000",
+    "top_p": "0.1"
+  },
+  "apiName": "gpt-4o-mini-Developers",
+  "description": "gpt-4o-mini-Developers",
+  "type": "Azure-OpenAI"
+}
