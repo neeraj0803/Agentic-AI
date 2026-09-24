@@ -1,4 +1,5 @@
 backend/.venv
+backend/venv
 backend/src/__pycache__
 backend/src/*/__pycache__
 backend/src/.env
@@ -6,6 +7,7 @@ backend/src/.env.example
 backend/src/*/*/__pycache__
 backend/workspace
 new-langgraph-backend/.venv
+new-langgraph-backend/venv
 
 # Antigravity Rules and Customizations (.md and config)
 AGENTS.md
