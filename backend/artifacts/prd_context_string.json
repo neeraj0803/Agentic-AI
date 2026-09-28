@@ -1,0 +1,275 @@
+{
+  "document_name": "tmpbcwcewh9.md",
+  "extracted_text": "# Business Requirements Document: Automated Cloud Cost Optimizer and FinOps Governance\n\n## 1. Problem Statement\nCloud infrastructure expenditure across AWS and Kubernetes environments has grown by 65% year-over-year, with an estimated \\$120,000 monthly wasted on unattached EBS volumes, oversized non-production database instances, and idle staging clusters left running over weekends.\n\n## 2. Business Goal & Target Outcomes\n- Implement automated rightsizing recommendations and scheduled shutdown of non-production workloads.\n- Cut monthly non-production cloud infrastructure expenditure by at least 25% (\\$30,000/month savings).\n- Provide real-time cost anomaly detection alerts within 15 minutes of abnormal spend spikes.\n\n## 3. Supporting Evidence & System Baseline\n- Quarterly infrastructure audits show non-production cluster utilization averages only 14% on weekends.\n- FinOps Guidelines domain documentation mandates cost-center tagging across all AWS and GCP resources.\n- Jira initiative OPS-100 targets automated idle resource cleanup and rightsizing.\n- Repository `cloud-cost-optimizer` contains resource usage analyzers (`src/finops/ResourceUsageAnalyzer.py`).\n\n## 4. Scope & Feature Modules\n- Automated Resource Scanner: Identifies idle compute, unattached storage volumes, and unassociated Elastic IPs.\n- Policy-Based Scheduler: Automatically scales down non-prod dev/test environments outside core business hours (7 PM - 7 AM Mon-Fri).\n- Slack & Email Anomaly Alerting: Notifies engineering leads when daily service spend exceeds 120% of trailing 7-day average.\n- FinOps Dashboard: Displays total savings achieved, pending rightsizing opportunities, and tagging compliance score.\n\n## 5. Stakeholders & Users\n- Engineering Team Leads & Site Reliability Engineers (SREs).\n- Cloud Operations Manager and Chief Financial Officer (CFO).\n\n## 6. Constraints & Safety Controls\n- Production workloads must never be modified or stopped by automated remediation policies.\n- Auto-remediation actions in staging must send 24-hour warning notifications before termination.\n",
+  "intent": "prd_context_generation",
+  "query_text": "string",
+  "title": "string",
+  "problem_statement": "Cloud infrastructure expenditure across AWS and Kubernetes environments has grown by 65% year-over-year, with an estimated $120,000 monthly wasted on unattached EBS volumes, oversized non-production database instances, and idle staging clusters left running over weekends.",
+  "business_goal": "Cut monthly non-production cloud infrastructure expenditure by at least 25% ($30,000/month savings).",
+  "evidence": [
+    "Quarterly infrastructure audits show non-production cluster utilization averages only 14% on weekends.",
+    "FinOps Guidelines domain documentation mandates cost-center tagging across all AWS and GCP resources."
+  ],
+  "users": [
+    "Engineering Team Leads",
+    "Site Reliability Engineers (SREs)",
+    "Cloud Operations Manager",
+    "Chief Financial Officer (CFO)"
+  ],
+  "assumptions": [
+    "Production workloads must never be modified or stopped by automated remediation policies."
+  ],
+  "constraints": [
+    "Auto-remediation actions in staging must send 24-hour warning notifications before termination."
+  ],
+  "scope": {
+    "in_scope": [
+      "Automated Resource Scanner",
+      "Policy-Based Scheduler",
+      "Slack & Email Anomaly Alerting",
+      "FinOps Dashboard"
+    ],
+    "out_of_scope": [
+      "Production workload modifications"
+    ]
+  },
+  "mcp_skills": [
+    {
+      "skill_id": "prd_generator",
+      "skill_version": "2.0",
+      "capability": "prd_generation",
+      "domain": "Product & Engineering",
+      "input_type": "context_and_evidence_package",
+      "output_type": "product_requirements_document",
+      "governance_status": "approved",
+      "lifecycle_status": "active",
+      "owner": "Apex Product Architecture Team"
+    }
+  ],
+  "mcp_context_package": {
+    "context_package_id": "ctx-pkg-72354c76",
+    "query_interpretation": {
+      "intent": "prd_context_generation",
+      "change_summary": "Implement capabilities for string.",
+      "detected_entities": {
+        "business_capabilities": [
+          "string management",
+          "core processing",
+          "event ingestion"
+        ],
+        "applications": [
+          "String Service"
+        ],
+        "source_families": [
+          "jira",
+          "confluence",
+          "git"
+        ]
+      }
+    },
+    "retrieved_references": [
+      {
+        "reference_id": "ref-prd-001",
+        "source_type": "prior_prd",
+        "title": "String Foundation PRD",
+        "relevance": "high",
+        "reason_for_relevance": "Prior architecture baseline for String Domain.",
+        "snippet": "Baseline architecture and data modeling for String.",
+        "link": "https://confluence.corp.internal/display/S/String+Foundation+PRD"
+      },
+      {
+        "reference_id": "ref-prd-002",
+        "source_type": "jira_epic",
+        "source_id": "S-100",
+        "title": "Deliver String capability enhancements",
+        "relevance": "high",
+        "reason_for_relevance": "Active business initiative in Jira.",
+        "snippet": "Objective: Deliver String capability enhancements.",
+        "link": "https://jira.corp.internal/browse/S-100"
+      },
+      {
+        "reference_id": "ref-prd-003",
+        "source_type": "domain_doc",
+        "title": "String Architecture and API Standards",
+        "relevance": "medium",
+        "reason_for_relevance": "Enterprise domain architecture policy and standards.",
+        "snippet": "All String APIs must be RESTful and return responses within 100ms.",
+        "link": "https://confluence.corp.internal/display/S/Standards"
+      },
+      {
+        "reference_id": "ref-prd-004",
+        "source_type": "code_reference",
+        "repository": "string-service",
+        "file_path": "src/core/StringManager.java",
+        "relevance": "medium",
+        "reason_for_relevance": "Core domain code handler in Git.",
+        "snippet": "executeStringWorkflow(requestContext)",
+        "link": "https://git.corp.internal/string-service/blob/main/src/core/StringManager.java"
+      }
+    ],
+    "candidate_signals": {
+      "business_goals": [
+        "Improve throughput and operational efficiency in String Domain",
+        "Reduce manual intervention and customer wait time"
+      ],
+      "possible_prd_sections": [
+        "problem statement",
+        "goals",
+        "non-goals",
+        "user journey",
+        "scope",
+        "dependencies",
+        "risks",
+        "open questions"
+      ],
+      "likely_impacted_capabilities": [
+        "string management",
+        "core processing",
+        "event ingestion"
+      ]
+    },
+    "gaps_or_questions": [
+      "Need confirmation of target volume and latency SLAs for String."
+    ],
+    "conflicts": [],
+    "permission_exclusions": [],
+    "freshness": {
+      "jira": "indexed_10_minutes_ago",
+      "confluence": "indexed_1_hour_ago",
+      "git": "indexed_30_minutes_ago"
+    },
+    "package_metadata": {
+      "references_returned": 4,
+      "references_considered": 48,
+      "estimated_tokens": 5800,
+      "budget_target": "medium",
+      "ranking_method": "semantic_plus_artifact_links"
+    }
+  },
+  "mcp_rpc_traces": {
+    "skills_call": {
+      "jsonrpc": "2.0",
+      "id": "skills-discover-admin-001",
+      "method": "tools/call",
+      "params": {
+        "name": "discover_skills",
+        "arguments": {
+          "search_context": {
+            "requested_by": "team_admin",
+            "active_team_id": "team-checkout-product"
+          },
+          "filters": {
+            "capability_need": "prd_generation",
+            "domain": "Product & Engineering",
+            "sdlc_phase": "Operate",
+            "governance_status": "approved",
+            "lifecycle_status": "active"
+          },
+          "result_preferences": {
+            "include_metadata": true,
+            "include_deprecated": false,
+            "max_results": 20
+          }
+        }
+      }
+    },
+    "context_call": {
+      "jsonrpc": "2.0",
+      "id": "prd-context-request-001",
+      "method": "tools/call",
+      "params": {
+        "name": "prism.context.retrieve",
+        "arguments": {
+          "caller_reference": {
+            "platform": "Apex",
+            "workflow_run_reference": "apex-run-prd-001",
+            "workflow_name": "Generate PRD",
+            "agent_name": "prd_context_brief_agent",
+            "agent_version": "1.0",
+            "step_name": "Retrieve Context",
+            "step_sequence": 2,
+            "correlation_id": "corr-prd-001"
+          },
+          "actor": {
+            "bearer_token": "<forwarded-user-token>",
+            "channel": "platform_ui",
+            "user_reference": "user-123"
+          },
+          "apex_scope": {
+            "active_team_id": "team-checkout-product",
+            "scope_profile_id": "scope-checkout-v1",
+            "business_hints": {
+              "portfolios": [
+                "Digital Engineering"
+              ],
+              "domains": [
+                "Checkout"
+              ],
+              "products": [
+                "Checkout Experience"
+              ]
+            },
+            "application_hints": {
+              "applications": [
+                "Checkout Service"
+              ],
+              "repositories": [
+                "checkout-service"
+              ],
+              "jira_projects": [
+                "CHK"
+              ],
+              "confluence_spaces": [
+                "CHECKOUT"
+              ]
+            }
+          },
+          "step_context": {
+            "step_intent": "Retrieve evidence for PRD/context brief generation.",
+            "configured_context_types": [
+              "prior_prds",
+              "related_epics",
+              "domain_docs",
+              "architecture_notes",
+              "standards"
+            ],
+            "configured_source_families": [
+              "jira",
+              "confluence",
+              "git"
+            ]
+          },
+          "query": {
+            "query_type": "natural_language",
+            "text": "string"
+          },
+          "retrieval_request": {
+            "context_needed": [
+              "retrieved_references",
+              "candidate_signals",
+              "gaps_or_questions",
+              "conflicts"
+            ],
+            "output_expectation": {
+              "package_type": "evidence_reference_package",
+              "include_relevance_rationale": true,
+              "include_citations": true,
+              "include_permission_exclusions": true
+            }
+          },
+          "controls": {
+            "data_classification": "internal",
+            "freshness_days": 180,
+            "context_size_target": "medium",
+            "timeout_ms": 30000
+          }
+        }
+      }
+    }
+  },
+  "problem": "Cloud infrastructure expenditure across AWS and Kubernetes environments has grown by 65% year-over-year, with an estimated $120,000 monthly wasted on unattached EBS volumes, oversized non-production database instances, and idle staging clusters left running over weekends.",
+  "needs": [],
+  "expected_impact": [
+    "Cut monthly non-production cloud infrastructure expenditure by at least 25% ($30,000/month savings)."
+  ]
+}
