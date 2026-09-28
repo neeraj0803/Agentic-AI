@@ -1,6 +1,6 @@
 {
   "document_name": "order_fulfillment_tracking_brd.md",
-  "extracted_text": "# Business Requirements Document: Real-Time Order Fulfillment and Shipment Tracking\n\n## 1. Problem Statement\nE-commerce buyers currently receive vague shipment status updates (\"In Transit\"), resulting in 42% of customer support inquiries (\"Where Is My Order?\" / WISMO). Furthermore, delivery exceptions and carrier delays are not proactively communicated to customers until after promised delivery dates pass.\n\n## 2. Business Goal & Expected Outcome\n- Provide end-to-end milestone visibility from warehouse dispatch to doorstep delivery.\n- Reduce WISMO customer support inquiries by 50% within 3 months of launch.\n- Deliver automated proactive SMS and email notifications upon transit milestone updates or carrier exception delays.\n\n## 3. Supporting Evidence & Links\n- Support analytics show WISMO tickets cost \\$4.20 per contact, totaling over \\$85,000 monthly in support operational costs.\n- Order Management System v1.2 PRD specifies order state transition event emission.\n- Epic ORD-100 tracks carrier webhook ingestion and customer shipment tracking UI.\n- Repository `order-tracking-service` contains the webhook dispatcher (`src/tracking/CarrierWebhookDispatcher.java`).\n\n## 4. Key Functional Capabilities\n- Multi-carrier webhook ingestion (FedEx, UPS, DHL, USPS) with deduplication and normalized event schemas.\n- Interactive tracking page with dynamic interactive map, estimated delivery window, and courier milestone timeline.\n- Delivery exception handling with automatic notification triggers and resolution suggestions.\n- Live webhook dispatcher emitting domain events to downstream communication services.\n\n## 5. Users & Stakeholders\n- Shoppers tracking their online orders.\n- Customer Experience & Logistics Support Specialists.\n- Warehouse Operations and Logistics Director.\n\n## 6. Assumptions & Non-Functional Requirements\n- Assumptions: Major carrier partners provide webhook push notifications with latency under 5 minutes.\n- NFR: Webhook ingestion throughput must support 5,000 requests/second during peak holiday sales.\n- NFR: Tracking page load time must be < 800ms globally across mobile and desktop devices.\n",
+  "extracted_text": "# Business Requirements Document: Real-Time Order Fulfillment and Shipment Tracking\n\n## 1. Problem Statement\nE-commerce buyers currently receive vague shipment status updates (\"In Transit\"), resulting in 42% of customer support inquiries (\"Where Is My Order?\" / WISMO). Furthermore, delivery exceptions and carrier delays are not proactively communicated to customers until after promised delivery dates pass.\n\n## 2. Business Goal & Expected Outcome\n- Provide end-to-end milestone visibility from warehouse dispatch to doorstep delivery.\n- Reduce WISMO customer support inquiries by 50% within 3 months of launch.\n- Deliver automated proactive SMS and email notifications upon transit milestone updates or carrier exception delays.\n\n## 3. Supporting Evidence & Links\n- Support analytics show WISMO tickets cost $4.20 per contact, totaling over $85,000 monthly in support operational costs.\n- Order Management System v1.2 PRD specifies order state transition event emission.\n- Epic ORD-100 tracks carrier webhook ingestion and customer shipment tracking UI.\n- Repository `order-tracking-service` contains the webhook dispatcher (`src/tracking/CarrierWebhookDispatcher.java`).\n\n## 4. Key Functional Capabilities\n- Multi-carrier webhook ingestion (FedEx, UPS, DHL, USPS) with deduplication and normalized event schemas.\n- Interactive tracking page with dynamic interactive map, estimated delivery window, and courier milestone timeline.\n- Delivery exception handling with automatic notification triggers and resolution suggestions.\n- Live webhook dispatcher emitting domain events to downstream communication services.\n\n## 5. Users & Stakeholders\n- Shoppers tracking their online orders.\n- Customer Experience & Logistics Support Specialists.\n- Warehouse Operations and Logistics Director.\n\n## 6. Assumptions & Non-Functional Requirements\n- Assumptions: Major carrier partners provide webhook push notifications with latency under 5 minutes.\n- NFR: Webhook ingestion throughput must support 5,000 requests/second during peak holiday sales.\n- NFR: Tracking page load time must be < 800ms globally across mobile and desktop devices.\n",
   "intent": "prd_context_generation",
   "query_text": "string",
   "title": "string",
@@ -140,127 +140,6 @@
       "estimated_tokens": 5800,
       "budget_target": "medium",
       "ranking_method": "semantic_plus_artifact_links"
-    }
-  },
-  "mcp_rpc_traces": {
-    "skills_call": {
-      "jsonrpc": "2.0",
-      "id": "skills-discover-admin-001",
-      "method": "tools/call",
-      "params": {
-        "name": "discover_skills",
-        "arguments": {
-          "search_context": {
-            "requested_by": "team_admin",
-            "active_team_id": "team-checkout-product"
-          },
-          "filters": {
-            "capability_need": "prd_generation",
-            "domain": "Product & Engineering",
-            "sdlc_phase": "Operate",
-            "governance_status": "approved",
-            "lifecycle_status": "active"
-          },
-          "result_preferences": {
-            "include_metadata": true,
-            "include_deprecated": false,
-            "max_results": 20
-          }
-        }
-      }
-    },
-    "context_call": {
-      "jsonrpc": "2.0",
-      "id": "prd-context-request-001",
-      "method": "tools/call",
-      "params": {
-        "name": "prism.context.retrieve",
-        "arguments": {
-          "caller_reference": {
-            "platform": "Apex",
-            "workflow_run_reference": "apex-run-prd-001",
-            "workflow_name": "Generate PRD",
-            "agent_name": "prd_context_brief_agent",
-            "agent_version": "1.0",
-            "step_name": "Retrieve Context",
-            "step_sequence": 2,
-            "correlation_id": "corr-prd-001"
-          },
-          "actor": {
-            "bearer_token": "<forwarded-user-token>",
-            "channel": "platform_ui",
-            "user_reference": "user-123"
-          },
-          "apex_scope": {
-            "active_team_id": "team-checkout-product",
-            "scope_profile_id": "scope-checkout-v1",
-            "business_hints": {
-              "portfolios": [
-                "Digital Engineering"
-              ],
-              "domains": [
-                "Checkout"
-              ],
-              "products": [
-                "Checkout Experience"
-              ]
-            },
-            "application_hints": {
-              "applications": [
-                "Checkout Service"
-              ],
-              "repositories": [
-                "checkout-service"
-              ],
-              "jira_projects": [
-                "CHK"
-              ],
-              "confluence_spaces": [
-                "CHECKOUT"
-              ]
-            }
-          },
-          "step_context": {
-            "step_intent": "Retrieve evidence for PRD/context brief generation.",
-            "configured_context_types": [
-              "prior_prds",
-              "related_epics",
-              "domain_docs",
-              "architecture_notes",
-              "standards"
-            ],
-            "configured_source_families": [
-              "jira",
-              "confluence",
-              "git"
-            ]
-          },
-          "query": {
-            "query_type": "natural_language",
-            "text": "string"
-          },
-          "retrieval_request": {
-            "context_needed": [
-              "retrieved_references",
-              "candidate_signals",
-              "gaps_or_questions",
-              "conflicts"
-            ],
-            "output_expectation": {
-              "package_type": "evidence_reference_package",
-              "include_relevance_rationale": true,
-              "include_citations": true,
-              "include_permission_exclusions": true
-            }
-          },
-          "controls": {
-            "data_classification": "internal",
-            "freshness_days": 180,
-            "context_size_target": "medium",
-            "timeout_ms": 30000
-          }
-        }
-      }
     }
   },
   "problem": "E-commerce buyers currently receive vague shipment status updates ('In Transit'), resulting in 42% of customer support inquiries ('Where Is My Order?' / WISMO). Furthermore, delivery exceptions and carrier delays are not proactively communicated to customers until after promised delivery dates pass.",

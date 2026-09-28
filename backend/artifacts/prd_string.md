@@ -22,128 +22,104 @@ Currently, customers receive minimal updates on their order status, leading to c
 
 ```mermaid
 flowchart TD
-    A[Order Placed] --> B[Order Processing]
-    B --> C[Shipment Created]
-    C --> D[In Transit]
-    D --> E[Delivery Exception]
-    D --> F[Delivered]
-    E --> G[Customer Inquiry]
-    G --> H[Support Response]
+    A[Order Placed] --> B[Warehouse Dispatch]
+    B --> C[Carrier In Transit]
+    C --> D{Milestone Update / Exception?}
+    D -- No --> E[Vague In-Transit Status]
+    E --> F[Customer WISMO Ticket]
+    D -- Yes --> G[Manual Support Lookup]
+    G --> F
 ```
 
 ## IV. What is Needed to Fix the Problem
 ### Core Capabilities Needed:
-- Multi-carrier webhook ingestion with deduplication and normalized event schemas.
-- Automated proactive notifications for shipment milestones and exceptions.
+- Multi-carrier webhook ingestion (FedEx, UPS, DHL, USPS) with deduplication and normalized event schemas.
+- Interactive tracking page with dynamic interactive map, estimated delivery window, and courier milestone timeline.
+- Delivery exception handling with automatic notification triggers and resolution suggestions.
+- Live webhook dispatcher emitting domain events to downstream communication services.
 
-- **Boundary Conditions**: Webhook ingestion throughput must support 5,000 requests/second during peak holiday sales.
+- **Boundary Conditions**: Integration with carriers not listed (FedEx, UPS, DHL, USPS) is out of scope.
 
 ## V. Customer and 3rd Party Research
-- **Customer Feedback**: N/A - Not specified in source input
+- **Customer Feedback**: 42% of support tickets are WISMO inquiries due to vague tracking.
 - **3rd Party Research**: N/A - Not specified in source input
 - **Analyst Insights**: N/A - Not specified in source input
 
 ## VI. Supporting Data
 ### Telemetry & Baseline Metrics:
-- N/A - Not specified in source input
+- WISMO tickets cost $4.20 per contact, totaling over $85,000 monthly.
 
 ## VII. Solution Discovery, Recommendation, Teams Involved + Sizing
-- **Recommended Solution**: Implement a real-time order tracking system that integrates with multiple carriers to provide timely updates and proactive notifications.
-- **Teams Involved**: Engineering, Product Management, Customer Support, QA
-- **Estimated Sizing**: N/A - Not specified in source input
+- **Recommended Solution**: Real-Time Order Tracking & Exception Management Platform.
+- **Teams Involved**: Logistics Engineering, Frontend Core, Customer Support Operations.
+- **Estimated Sizing**: 4 Sprints (8 weeks).
 
 ## VIII. Functional and Technical Design
-- **System Architecture**: The system will consist of a webhook dispatcher for carrier notifications, a tracking page for customers, and a backend service for processing events.
+- **System Architecture**: Multi-carrier event stream processor with Redis cache and WebSocket push.
 
 ```mermaid
 flowchart LR
-    A[Webhook Dispatcher] --> B[Event Processing Service]
-    B --> C[Tracking Page]
-    C --> D[Notification Service]
+    A[Carrier Webhooks] --> B[Ingestion & Deduplication Engine]
+    B --> C[Tracking State Store]
+    C --> D[Customer Tracking UI]
+    C --> E[Notification Service]
 ```
 
 ### Non-Functional Requirements (NFRs):
-- **Performance / Latency**: Webhook ingestion latency must be under 5 minutes.
-- **Availability & SLA**: 99.9% uptime target.
-- **Security & Compliance**: Ensure compliance with data protection regulations and secure transmission of data.
+- **Performance / Latency**: Webhook ingestion throughput must support 5,000 requests/second. Page load time < 800ms.
+- **Availability & SLA**: 99.9% uptime.
+- **Security & Compliance**: End-to-end TLS 1.3 and sanitized PII handling.
 
 ## IX. To Be Process Map
-In the future state, customers will receive timely updates on their order status through automated notifications, significantly reducing the volume of inquiries to customer support.
-
 ```mermaid
 flowchart TD
-    A[Order Placed] --> B[Order Processing]
-    B --> C[Shipment Created]
-    C --> D[In Transit]
-    D --> E[Delivery Exception]
-    D --> F[Delivered]
-    E --> G[Automated Notification]
-    G --> H[Customer Informed]
+    A[Order Dispatched] --> B[Carrier Webhook Event]
+    B --> C[Automated Ingestion & State Update]
+    C --> D[Proactive Notification Sent]
+    C --> E[Live Interactive Map Updated]
 ```
 
 ## X. Impact Assessment / Opportunity / Metrics
-- **North Star Metric**: Reduce WISMO customer support inquiries by 50% within 3 months of launch.
-- **ROI & Opportunity**: Expected reduction in operational costs associated with customer support.
-
-### Target KPIs:
-- **WISMO Inquiries**: Baseline = 42% | Target = 21%
+- **North Star Metric**: WISMO Inquiry Rate.
+- **Target KPIs**: Reduce WISMO inquiries by 50% within 3 months.
 
 ## XI. Development Approach, High Level Requirements, + Epic Breakdown
-### Release Phasing:
-- **MVP Scope**: Multi-carrier webhook ingestion, interactive tracking page with dynamic map, automated notifications.
-- **Out of Scope**: Integration with carriers not listed (FedEx, UPS, DHL, USPS).
-
-### Epic & User Story Breakdown:
-#### Epic 1: Multi-carrier Integration
-- **User Story**: As a Shopper, I want to receive real-time updates on my order status so that I can track my shipment effectively.
+### Epic 1: Carrier Webhook Ingestion & Tracking UI
+- **User Story**: As an online shopper, I want to view live milestones and delivery windows so that I know exactly when my order will arrive.
 - **Acceptance Criteria**:
-  - Given an order is placed,
-  - When the shipment status changes,
-  - Then the customer receives an automated notification.
+  - Given an order is in transit
+  - When carrier emits a milestone webhook
+  - Then the tracking page updates within 5 seconds and an SMS is sent.
 
 ## XII. Open Questions and Decision Log
 ### Decisions Made:
-- **Decision**: Implement multi-carrier webhook ingestion (Rationale: To provide real-time updates).
-
-### Open Questions:
-- **Question**: What are the specific latency SLAs for each carrier? | Owner: Logistics Team
+- **Decision**: Standardize on carrier webhook push over polling.
 
 ## XIII. Roster
-### Project Team & RACI:
-- **Product Owner**: [Role/Owner]
-- **Technical Lead**: [Role/Owner]
-- **QA / SRE**: [Role/Owner]
+- **Product Owner**: Logistics Lead PO
+- **Technical Lead**: Core Services Architect
 
 ## XIV. Market Research
-- **Market Size (TAM/SAM/SOM)**: N/A - Not specified in source input
-- **Market Trends**: N/A - Not specified in source input
+- N/A - Not specified in source input
 
 ## XV. Competitive Analysis
-- **Key Differentiators**: N/A - Not specified in source input
+- N/A - Not specified in source input
 
 ## XVI. Target Personas
-- **Shoppers**: Goals: Track orders easily | Pain Points: Lack of visibility on order status.
+- **Shoppers tracking orders**: Wants real-time transparency and accurate ETA.
 
 ## XVII. Messaging & positioning
-- **Positioning**: Real-time order tracking that keeps customers informed and reduces support inquiries.
-- **Value Pillars**: Transparency, Efficiency, Customer Satisfaction.
+- Proactive delivery peace of mind.
 
 ## XVIII. Pricing
-- **Pricing Model**: N/A - Not specified in source input
-- **Tier Breakdown**: N/A - Not specified in source input
+- Internal capability - N/A.
 
 ## XIX. Distribution channels & launch activities
-- **Launch Phases**: Alpha testing with select users, followed by Beta release and General Availability (GA).
-- **Enablement Plan**: Documentation for users and training for support staff.
+- Phased rollout to 10% -> 50% -> 100% of order volume.
 
 ## XX. Support plan
-- **Escalation Path**: Tier 1 -> Tier 2 -> Tier 3 engineering.
-- **Runbooks & Training**: Operational monitoring procedures and training materials for support staff.
+- Tier 1 CX Escalation to Logistics Support Operations.
 
 ## XXI. Reference materials
 - [String Foundation PRD](https://confluence.corp.internal/display/S/String+Foundation+PRD)
 - [Deliver String capability enhancements](https://jira.corp.internal/browse/S-100)
-- [String Architecture and API Standards](https://confluence.corp.internal/display/S/Standards)
-- [Core domain code handler](https://git.corp.internal/string-service/blob/main/src/core/StringManager.java)
-
----

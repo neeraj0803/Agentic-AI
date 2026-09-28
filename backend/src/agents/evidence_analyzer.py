@@ -1,9 +1,10 @@
 import json
-from typing import Any, Dict
+import re
+from typing import Any, Mapping
 from ..services.llm_service import LLMService
 
 
-def evidence_analyzer_node(context_analysis: Dict[str, Any]) -> Dict[str, Any]:
+def evidence_analyzer_node(context_analysis: Mapping[str, Any]) -> dict[str, Any]:
     """
     Evidence Analyzer Agent node.
     Inspects problem statements, business goals, evidence, users, assumptions,
@@ -24,46 +25,60 @@ def evidence_analyzer_node(context_analysis: Dict[str, Any]) -> Dict[str, Any]:
     constraints = context_analysis.get("constraints", [])
     doc_text = context_analysis.get("extracted_text", "")
 
+    context = {
+        "problem_statement": prob,
+        "business_goal": goal,
+        "evidence": evidence,
+        "users": users,
+        "assumptions": assumptions,
+        "constraints": constraints,
+    }
+
     prompt = f"""
-You are an Evidence Analyzer Agent. Inspect the following product context and evaluate whether the evidence, problem statement, and requirements are sufficient to proceed with PRD generation.
+You are a senior business analyst reviewing context before PRD generation.
 
-Context to Analyze:
-- Problem Statement: {prob}
-- Business Goal: {goal}
-- Target Users: {json.dumps(users)}
-- Evidence Items: {json.dumps(evidence)}
-- Assumptions: {json.dumps(assumptions)}
-- Constraints: {json.dumps(constraints)}
-- Document Snippet: {doc_text[:1500]}
+Decide whether the supplied context and evidence are sufficient to draft a
+grounded PRD. Check whether the problem and business goal are clear, users
+are identified, and evidence is specific and relevant. Do not treat
+assumptions as evidence. Do not invent missing information.
 
-Evaluate:
-1. Is the problem well-defined and grounded?
-2. Are business goals and success criteria present?
-3. Is evidence or telemetry provided to back the problem?
-4. Are missing context items or weak evidence identified?
-
-Return ONLY valid JSON:
+Return only valid JSON with this shape:
 {{
   "sufficient": true,
   "missing_context": [],
   "weak_evidence": [],
   "rationale": "Evidence and problem framing are well-grounded."
 }}
+
+If information is absent or too vague, set "sufficient" to false and explain
+the gaps in the corresponding lists.
+
+Context:
+{json.dumps(context, ensure_ascii=False, indent=2)}
 """
     try:
-        res = LLMService.generate(prompt)
-        if res:
-            cleaned = res.replace("```json", "").replace("```", "").strip()
-            parsed = json.loads(cleaned)
-            if isinstance(parsed, dict) and "sufficient" in parsed:
-                return parsed
+        response = LLMService.generate(prompt)
+        if response:
+            cleaned_response = re.sub(
+                r"^\s*```(?:json)?\s*|\s*```\s*$",
+                "",
+                response.strip(),
+                flags=re.IGNORECASE,
+            )
+            review = json.loads(cleaned_response)
+            if isinstance(review, dict) and isinstance(review.get("sufficient"), bool):
+                return {
+                    "sufficient": review["sufficient"],
+                    "missing_context": review.get("missing_context", []),
+                    "weak_evidence": review.get("weak_evidence", []),
+                    "rationale": review.get("rationale", ""),
+                }
     except Exception:
         pass
 
     # Dynamic fallback evaluation
     has_prob = bool(prob and len(str(prob).strip()) > 15)
     has_goal = bool(goal and len(str(goal).strip()) > 10)
-    has_evidence = len(evidence) > 0 or len(doc_text) > 100
 
     missing = []
     if not has_prob:

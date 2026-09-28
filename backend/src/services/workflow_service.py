@@ -146,7 +146,11 @@ class WorkflowOrchestratorService:
                     "supplementary_file": supp_path
                 })
                 supp_text = DocumentExtractorService.extract_text(supp_path)
-                combined_text = f"{extracted_text}\n\n## Supplementary Grounding Context\n{supp_text}"
+                combined_text = (
+                    f"{extracted_text}\n\n"
+                    "## Supplementary Grounding Context\n"
+                    f"{supp_text}"
+                )
 
                 # Re-run Context Analysis and Gap Analysis with enriched text
                 context_analysis = self.context_service.analyze(
@@ -171,6 +175,9 @@ class WorkflowOrchestratorService:
                     "rationale": evidence_eval.get("rationale")
                 })
                 session_state["status"] = "paused_missing_context"
+                session_state["context_analysis"] = context_analysis
+                session_state["gap_report"] = gap_report
+                session_state["evidence_analysis"] = evidence_eval
                 return {
                     "session_id": session_id,
                     "status": "needs_more_context",

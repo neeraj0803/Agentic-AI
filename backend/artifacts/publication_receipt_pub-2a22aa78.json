@@ -1,0 +1,34 @@
+{
+  "publication_id": "pub-2a22aa78",
+  "status": "published",
+  "published_at": "2026-09-28T09:40:39.995696+00:00",
+  "target_platform": "both",
+  "publications": {
+    "confluence": {
+      "page_id": "conf-page-9e1c2e",
+      "space_key": "CHECKOUT",
+      "title": "string",
+      "url": "https://confluence.corp.internal/display/CHECKOUT/string",
+      "status": "created",
+      "version": 1
+    },
+    "jira": {
+      "epic_key": "CHK-1200",
+      "epic_summary": "string",
+      "epic_url": "https://jira.corp.internal/browse/CHK-1200",
+      "stories_created": [
+        {
+          "key": "CHK-1201",
+          "summary": "Implement payment failure code classification in PaymentErrorMapper",
+          "status": "To Do"
+        },
+        {
+          "key": "CHK-1202",
+          "summary": "Render context-aware retry banner on checkout page",
+          "status": "To Do"
+        }
+      ],
+      "status": "created"
+    }
+  }
+}

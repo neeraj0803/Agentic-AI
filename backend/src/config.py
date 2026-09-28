@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     llm_params: LLMParameters = Field(default_factory=LLMParameters)
     gemini: Gemini = Field(default_factory=Gemini)
     azure_openai: AzureOpenAI = Field(default_factory=AzureOpenAI)
+    hitl_context_file_path: Optional[str] = None
 
 
 settings = Settings()
