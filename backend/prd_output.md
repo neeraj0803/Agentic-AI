@@ -1,129 +1,149 @@
-# Product Requirements Document: Business Requirements Document Real-Time Order Fulfillment and Shipment Tracking
+# Product Requirements Document: Real-Time Order Fulfillment and Shipment Tracking
 
-## 1. EXECUTIVE SUMMARY
-This Product Requirements Document defines the requirements and technical architecture for **Business Requirements Document Real-Time Order Fulfillment and Shipment Tracking**. By establishing clear, actionable error messaging and recoverable retry journeys at checkout, the platform significantly reduces customer drop-off and enhances overall payment transaction success rates.
+---
 
-## 2. PROBLEM STATEMENT & EVIDENCE
-## Problem
+## I. Problem Statement
+- **Problem**: E-commerce buyers currently receive vague shipment status updates ("In Transit"), resulting in 42% of customer support inquiries ("Where Is My Order?" / WISMO). Furthermore, delivery exceptions and carrier delays are not proactively communicated to customers until after promised delivery dates pass.
+- **Root Cause**: N/A - Not specified in source input
+- **Affected Users**: Shoppers tracking their online orders, Customer Experience & Logistics Support Specialists
+- **Urgency & Timing**: Immediate need to reduce customer support inquiries and improve customer satisfaction.
 
-E-commerce buyers currently receive vague shipment status updates ('In Transit'), resulting in 42% of customer support inquiries ('Where Is My Order?' / WISMO). Furthermore, delivery exceptions and carrier delays are not proactively communicated to customers until after promised delivery dates pass.
+## II. Impact of Problem
+- **Quantified Impact**: Support analytics show WISMO tickets cost $4.20 per contact, totaling over $85,000 monthly in support operational costs.
+- **Operational / Financial Cost**: N/A - Not specified in source input
+- **Risks of Inaction**: Continued high volume of customer support inquiries leading to increased operational costs and decreased customer satisfaction.
 
-- **Supporting Evidence**:
-  - WISMO tickets cost $4.20 per contact, totaling over $85,000 monthly in support operational costs.
-  - Order Management System v1.2 PRD specifies order state transition event emission.
-- **Discovered Evidence Sources**:
-  - Prior PRD: Checkout Payment Resilience PRD (Confluence)
-  - Related Epic: CHK-1200 - Improve checkout payment recovery journey (Jira)
-  - Domain Standards: Checkout Payment Experience Standards (Confluence)
-  - Codebase: checkout-service -> src/payment/PaymentErrorMapper.java (Git)
+## III. Problem Area Process Map
+Currently, customers receive minimal updates on their order status, leading to confusion and frustration. The lack of proactive communication regarding delays or exceptions results in a high volume of inquiries to customer support.
 
-## 3. BUSINESS GOALS & SUCCESS METRICS
-- **Core Business Goal**: Reduce WISMO customer support inquiries by 50% within 3 months of launch by providing end-to-end milestone visibility and automated notifications.
-- **Target Key Performance Indicators (KPIs)**:
-  - Reduce checkout payment abandonment rate by 18%.
-  - Improve second-attempt retry success rate by 25%.
-  - Decrease payment-related customer support tickets by 30%.
-- **Strategic OKRs**:
-  - Objective: Deliver frictionless customer payment experiences.
-  - Key Result: Achieve a retry recovery rate > 65% for temporary bank decline codes.
+### Identified Bottlenecks:
+- Lack of real-time updates on shipment status.
+- Delayed communication of delivery exceptions.
 
-## 4. USERS & PERSONAS
-## Users
-
-- **Primary Personas**:
-  - **Shoppers tracking their online orders**: Requires immediate, transparent, and actionable guidance when a payment attempt fails.
-  - **Customer Experience & Logistics Support Specialists**: Requires immediate, transparent, and actionable guidance when a payment attempt fails.
-  - **Warehouse Operations and Logistics Director**: Requires immediate, transparent, and actionable guidance when a payment attempt fails.
-
-## Needs
-
-- End-to-end milestone visibility from warehouse dispatch to doorstep delivery
-- Automated proactive SMS and email notifications upon transit milestone updates or carrier exception delays
-
-- **User Journey Summary**:
-  1. Customer enters payment details and clicks 'Place Order'.
-  2. Payment authorization encounters a soft decline (e.g. insufficient funds, 3DS timeout).
-  3. Checkout service maps the failure via PaymentErrorMapper.
-  4. Customer receives friendly retry guidance with alternative payment option recommendations.
-
-## 5. SYSTEM OVERVIEW & ARCHITECTURE ALIGNMENT
-- **Impacted Services**:
-  - `Checkout Service`: Evaluates transaction response and renders localized error messaging.
-  - `Payment Service`: Interfaces with payment gateways and exposes granular failure reason codes.
-  - `Prism Context Engine`: Provides enterprise domain standards and historical epic tracking.
-
-## 6. SCOPE & MVP DEFINITION
-## Scope
-
-### In Scope (MVP):
-- Multi-carrier webhook ingestion
-- Interactive tracking page with dynamic map and estimated delivery window
-- Delivery exception handling with automatic notification triggers
-
-### Out of Scope:
-- Settlement protocol modifications
-
-## 7. FUNCTIONAL REQUIREMENTS
-### FR-1: Payment Failure Code Categorization
-- **Description**: The system must categorize all payment failure responses into recoverable (e.g. CVV mismatch, card expired, insufficient funds) or unrecoverable (e.g. fraud block, account closed).
-- **Acceptance Criteria**:
-  - **Given** an active customer transaction experiencing an authorization failure,
-  - **When** the payment gateway returns an error code,
-  - **Then** the Checkout Service classifies it as recoverable or unrecoverable within 15ms.
-
-### FR-2: Recoverable Payment Retry Guidance
-- **Description**: For recoverable failures, the checkout UI must present a context-aware retry banner and retain cart state.
-- **Acceptance Criteria**:
-  - **Given** a recoverable payment failure has occurred,
-  - **When** the error modal or banner renders,
-  - **Then** the customer is presented with specific corrective instructions (e.g. 'Please check your CVV' or 'Select a different payment method') without losing order information.
-
-## 8. AGENT IDENTIFICATION & MCP INTEGRATION DESIGN
-- **Discovered Skills**:
-  - `prd_generator` (v2.0): Discovered via Mock MCP Skill Engine (`discover_skills`).
-  - `context_brief_generator` (v1.5): Handles evidence synthesis.
-- **MCP Context Integration**:
-  - Tool: `prism.context.retrieve` invoked with caller reference `Apex/prd_context_brief_agent`.
-  - Integrated Source Families: Jira (CHK), Confluence (CHECKOUT), and Git (checkout-service).
-
-## 9. MERMAID ARCHITECTURE & SEQUENCE DIAGRAM
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Customer
-    participant UI as Checkout Frontend
-    participant CS as Checkout Service
-    participant PS as Payment Service
-    participant MCP as Prism Context Engine
-    Customer->>UI: Submit Payment
-    UI->>CS: Process Payment Request
-    CS->>PS: Authorize Transaction
-    PS-->>CS: Authorization Failed (Code: RECOVERABLE_INSUFFICIENT_FUNDS)
-    CS->>MCP: Query Experience Standards (prism.context.retrieve)
-    MCP-->>CS: Return Recoverable Messaging Standards
-    CS-->>UI: Display Retry Guidance & Alternative Payment Suggestions
-    UI-->>Customer: Present actionable retry action
+flowchart TD
+    A[Order Placed] --> B[Order Processing]
+    B --> C[Shipment Created]
+    C --> D[In Transit]
+    D --> E[Delivery Exception]
+    D --> F[Delivered]
+    E --> G[Customer Inquiry]
+    G --> H[Support Response]
 ```
 
-## 10. NON-FUNCTIONAL REQUIREMENTS & GOVERNANCE
-- **Performance**: Error classification and message mapping must execute in < 25ms (p99).
-- **Data Classification**: Internal - No unmasked Primary Account Numbers (PAN) logged or persisted.
-- **Freshness Controls**: Context indexed within 180 days freshness window.
+## IV. What is Needed to Fix the Problem
+### Core Capabilities Needed:
+- Multi-carrier webhook ingestion with deduplication and normalized event schemas.
+- Automated proactive notifications for shipment milestones and exceptions.
 
-## 11. DEPENDENCIES, RISKS & MITIGATIONS
-- **Dependency**: Payment Gateway error code dictionary must remain synchronized with PaymentErrorMapper.java.
-- **Risk**: Gateway returning undocumented or ambiguous failure codes.
-- **Mitigation**: Default to safe fallback recoverable guidance with clear option to switch payment methods.
+- **Boundary Conditions**: Webhook ingestion throughput must support 5,000 requests/second during peak holiday sales.
 
-## 12. OPEN QUESTIONS & ASSUMPTIONS
-- **Resolved Conflicts**:
-  - Older PRD excludes retry messaging; current epic CHK-1200 mandates customer-facing recovery guidance. Resolved in favor of CHK-1200.
-- **Open Questions for Human Review**:
-  - Need confirmation of carrier partner SLA and webhook timeout thresholds.
-  - Need target delivery date prediction accuracy metric.
+## V. Customer and 3rd Party Research
+- **Customer Feedback**: N/A - Not specified in source input
+- **3rd Party Research**: N/A - Not specified in source input
+- **Analyst Insights**: N/A - Not specified in source input
 
-## 13. RELEASE STRATEGY & Implementation Order
-- **Phase 1 (Sprint 1-2)**: Implement PaymentErrorMapper recoverable categorization and backend logging.
-- **Phase 2 (Sprint 3-4)**: Frontend UI retry banners and alternative payment method switcher.
-- **Phase 3 (Sprint 5)**: A/B testing on 20% traffic measuring abandonment reduction and retry conversion.
-- **Target Jira Epics**: CHK-1200 (Improve checkout payment recovery journey).
+## VI. Supporting Data
+### Telemetry & Baseline Metrics:
+- N/A - Not specified in source input
+
+## VII. Solution Discovery, Recommendation, Teams Involved + Sizing
+- **Recommended Solution**: Implement a real-time order tracking system that integrates with multiple carriers to provide timely updates and proactive notifications.
+- **Teams Involved**: Engineering, Product Management, Customer Support, QA
+- **Estimated Sizing**: N/A - Not specified in source input
+
+## VIII. Functional and Technical Design
+- **System Architecture**: The system will consist of a webhook dispatcher for carrier notifications, a tracking page for customers, and a backend service for processing events.
+
+```mermaid
+flowchart LR
+    A[Webhook Dispatcher] --> B[Event Processing Service]
+    B --> C[Tracking Page]
+    C --> D[Notification Service]
+```
+
+### Non-Functional Requirements (NFRs):
+- **Performance / Latency**: Webhook ingestion latency must be under 5 minutes.
+- **Availability & SLA**: 99.9% uptime target.
+- **Security & Compliance**: Ensure compliance with data protection regulations and secure transmission of data.
+
+## IX. To Be Process Map
+In the future state, customers will receive timely updates on their order status through automated notifications, significantly reducing the volume of inquiries to customer support.
+
+```mermaid
+flowchart TD
+    A[Order Placed] --> B[Order Processing]
+    B --> C[Shipment Created]
+    C --> D[In Transit]
+    D --> E[Delivery Exception]
+    D --> F[Delivered]
+    E --> G[Automated Notification]
+    G --> H[Customer Informed]
+```
+
+## X. Impact Assessment / Opportunity / Metrics
+- **North Star Metric**: Reduce WISMO customer support inquiries by 50% within 3 months of launch.
+- **ROI & Opportunity**: Expected reduction in operational costs associated with customer support.
+
+### Target KPIs:
+- **WISMO Inquiries**: Baseline = 42% | Target = 21%
+
+## XI. Development Approach, High Level Requirements, + Epic Breakdown
+### Release Phasing:
+- **MVP Scope**: Multi-carrier webhook ingestion, interactive tracking page with dynamic map, automated notifications.
+- **Out of Scope**: Integration with carriers not listed (FedEx, UPS, DHL, USPS).
+
+### Epic & User Story Breakdown:
+#### Epic 1: Multi-carrier Integration
+- **User Story**: As a Shopper, I want to receive real-time updates on my order status so that I can track my shipment effectively.
+- **Acceptance Criteria**:
+  - Given an order is placed,
+  - When the shipment status changes,
+  - Then the customer receives an automated notification.
+
+## XII. Open Questions and Decision Log
+### Decisions Made:
+- **Decision**: Implement multi-carrier webhook ingestion (Rationale: To provide real-time updates).
+
+### Open Questions:
+- **Question**: What are the specific latency SLAs for each carrier? | Owner: Logistics Team
+
+## XIII. Roster
+### Project Team & RACI:
+- **Product Owner**: [Role/Owner]
+- **Technical Lead**: [Role/Owner]
+- **QA / SRE**: [Role/Owner]
+
+## XIV. Market Research
+- **Market Size (TAM/SAM/SOM)**: N/A - Not specified in source input
+- **Market Trends**: N/A - Not specified in source input
+
+## XV. Competitive Analysis
+- **Key Differentiators**: N/A - Not specified in source input
+
+## XVI. Target Personas
+- **Shoppers**: Goals: Track orders easily | Pain Points: Lack of visibility on order status.
+
+## XVII. Messaging & positioning
+- **Positioning**: Real-time order tracking that keeps customers informed and reduces support inquiries.
+- **Value Pillars**: Transparency, Efficiency, Customer Satisfaction.
+
+## XVIII. Pricing
+- **Pricing Model**: N/A - Not specified in source input
+- **Tier Breakdown**: N/A - Not specified in source input
+
+## XIX. Distribution channels & launch activities
+- **Launch Phases**: Alpha testing with select users, followed by Beta release and General Availability (GA).
+- **Enablement Plan**: Documentation for users and training for support staff.
+
+## XX. Support plan
+- **Escalation Path**: Tier 1 -> Tier 2 -> Tier 3 engineering.
+- **Runbooks & Training**: Operational monitoring procedures and training materials for support staff.
+
+## XXI. Reference materials
+- [String Foundation PRD](https://confluence.corp.internal/display/S/String+Foundation+PRD)
+- [Deliver String capability enhancements](https://jira.corp.internal/browse/S-100)
+- [String Architecture and API Standards](https://confluence.corp.internal/display/S/Standards)
+- [Core domain code handler](https://git.corp.internal/string-service/blob/main/src/core/StringManager.java)
+
+---

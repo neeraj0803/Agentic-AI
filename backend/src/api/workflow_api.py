@@ -55,6 +55,7 @@ async def upload_and_run_workflow(
     try:
         result = orchestrator.run_workflow_from_file(
             file_path=tmp_path,
+            original_document_name=file.filename or "uploaded_document.md",
             active_team_id=active_team_id,
             query_override=query_override,
             auto_approve_hitl=auto_approve_hitl,

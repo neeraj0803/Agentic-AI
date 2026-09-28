@@ -54,9 +54,10 @@ class TestWorkflowEndToEnd(unittest.TestCase):
         self.assertTrue(review["passed"])
         self.assertGreaterEqual(review["quality_score"], 80)
 
-        # 5. HITL Bypassed
+        # 5. HITL Active Approval
         hitl = result["hitl_review"]
-        self.assertEqual(hitl["status"], "bypassed")
+        self.assertTrue(hitl["is_approved"])
+        self.assertEqual(hitl["decision"], "approve")
 
         # 6. Publish Receipt
         publish = result["publish_receipt"]

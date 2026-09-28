@@ -1,7 +1,9 @@
 try:
     from google import genai
+    from google.genai import types
 except ImportError:  # pragma: no cover - optional dependency in free-tier envs
     genai = None
+    types = None
 
 try:
     from openai import AzureOpenAI
@@ -51,10 +53,11 @@ class LLMService:
         cls,
         prompt: str,
         provider: str | None = None
-    ):
+    ) -> str:
 
         provider = (
             provider
+            or settings.llm.provider
             or "azure"
         ).lower()
 
@@ -78,24 +81,35 @@ class LLMService:
     def _generate_gemini(
         cls,
         prompt: str
-    ):
+    ) -> str:
 
         client = cls.get_gemini_client()
+        params = settings.llm_params
+
+        config = None
+        if types is not None:
+            config = types.GenerateContentConfig(
+                temperature=params.temperature,
+                top_p=params.top_p,
+                max_output_tokens=params.max_tokens,
+            )
 
         response = client.models.generate_content(
             model=settings.gemini.gemini_model,
-            contents=prompt
+            contents=prompt,
+            config=config
         )
 
-        return response.text
+        return response.text or ""
 
     @classmethod
     def _generate_azure(
         cls,
         prompt: str
-    ):
+    ) -> str:
 
         client = cls.get_azure_client()
+        params = settings.llm_params
 
         response = client.chat.completions.create(
             model=settings.azure_openai.azure_openai_deployment,
@@ -105,7 +119,11 @@ class LLMService:
                     "content": prompt
                 }
             ],
-            temperature=0
+            temperature=params.temperature,
+            top_p=params.top_p,
+            max_tokens=params.max_tokens,
+            frequency_penalty=params.frequency_penalty,
+            presence_penalty=params.presence_penalty
         )
 
-        return response.choices[0].message.content
+        return response.choices[0].message.content or ""

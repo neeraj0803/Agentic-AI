@@ -3,6 +3,14 @@ from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class LLMParameters(BaseModel):
+    temperature: float = 0.1
+    top_p: float = 0.95
+    max_tokens: int = 8192
+    frequency_penalty: float = 0.1
+    presence_penalty: float = 0.0
+
+
 class LLMProvider(BaseModel):
     provider: str = "azure"
 
@@ -30,7 +38,9 @@ class Settings(BaseSettings):
 
     app_name: str = "Agentic AI"
     debug: bool = True
+    hitl_context_file_path: Optional[str] = None
     llm: LLMProvider = Field(default_factory=LLMProvider)
+    llm_params: LLMParameters = Field(default_factory=LLMParameters)
     gemini: Gemini = Field(default_factory=Gemini)
     azure_openai: AzureOpenAI = Field(default_factory=AzureOpenAI)
 

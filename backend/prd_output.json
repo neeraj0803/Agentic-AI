@@ -2,34 +2,31 @@
   "document_name": "order_fulfillment_tracking_brd.md",
   "extracted_text": "# Business Requirements Document: Real-Time Order Fulfillment and Shipment Tracking\n\n## 1. Problem Statement\nE-commerce buyers currently receive vague shipment status updates (\"In Transit\"), resulting in 42% of customer support inquiries (\"Where Is My Order?\" / WISMO). Furthermore, delivery exceptions and carrier delays are not proactively communicated to customers until after promised delivery dates pass.\n\n## 2. Business Goal & Expected Outcome\n- Provide end-to-end milestone visibility from warehouse dispatch to doorstep delivery.\n- Reduce WISMO customer support inquiries by 50% within 3 months of launch.\n- Deliver automated proactive SMS and email notifications upon transit milestone updates or carrier exception delays.\n\n## 3. Supporting Evidence & Links\n- Support analytics show WISMO tickets cost \\$4.20 per contact, totaling over \\$85,000 monthly in support operational costs.\n- Order Management System v1.2 PRD specifies order state transition event emission.\n- Epic ORD-100 tracks carrier webhook ingestion and customer shipment tracking UI.\n- Repository `order-tracking-service` contains the webhook dispatcher (`src/tracking/CarrierWebhookDispatcher.java`).\n\n## 4. Key Functional Capabilities\n- Multi-carrier webhook ingestion (FedEx, UPS, DHL, USPS) with deduplication and normalized event schemas.\n- Interactive tracking page with dynamic interactive map, estimated delivery window, and courier milestone timeline.\n- Delivery exception handling with automatic notification triggers and resolution suggestions.\n- Live webhook dispatcher emitting domain events to downstream communication services.\n\n## 5. Users & Stakeholders\n- Shoppers tracking their online orders.\n- Customer Experience & Logistics Support Specialists.\n- Warehouse Operations and Logistics Director.\n\n## 6. Assumptions & Non-Functional Requirements\n- Assumptions: Major carrier partners provide webhook push notifications with latency under 5 minutes.\n- NFR: Webhook ingestion throughput must support 5,000 requests/second during peak holiday sales.\n- NFR: Tracking page load time must be < 800ms globally across mobile and desktop devices.\n",
   "intent": "prd_context_generation",
-  "query_text": "Create a PRD/context brief for business requirements document real-time order fulfillment and shipment tracking.",
-  "title": "Business Requirements Document Real-Time Order Fulfillment and Shipment Tracking",
+  "query_text": "string",
+  "title": "string",
   "problem_statement": "E-commerce buyers currently receive vague shipment status updates ('In Transit'), resulting in 42% of customer support inquiries ('Where Is My Order?' / WISMO). Furthermore, delivery exceptions and carrier delays are not proactively communicated to customers until after promised delivery dates pass.",
-  "business_goal": "Reduce WISMO customer support inquiries by 50% within 3 months of launch by providing end-to-end milestone visibility and automated notifications.",
+  "business_goal": "Reduce WISMO customer support inquiries by 50% within 3 months of launch.",
   "evidence": [
-    "WISMO tickets cost $4.20 per contact, totaling over $85,000 monthly in support operational costs.",
-    "Order Management System v1.2 PRD specifies order state transition event emission."
+    "Support analytics show WISMO tickets cost $4.20 per contact, totaling over $85,000 monthly in support operational costs.",
+    "Epic ORD-100 tracks carrier webhook ingestion and customer shipment tracking UI."
   ],
   "users": [
     "Shoppers tracking their online orders",
-    "Customer Experience & Logistics Support Specialists",
-    "Warehouse Operations and Logistics Director"
+    "Customer Experience & Logistics Support Specialists"
   ],
   "assumptions": [
     "Major carrier partners provide webhook push notifications with latency under 5 minutes."
   ],
   "constraints": [
-    "Webhook ingestion throughput must support 5,000 requests/second during peak holiday sales.",
-    "Tracking page load time must be < 800ms globally across mobile and desktop devices."
+    "Webhook ingestion throughput must support 5,000 requests/second during peak holiday sales."
   ],
   "scope": {
     "in_scope": [
-      "Multi-carrier webhook ingestion",
-      "Interactive tracking page with dynamic map and estimated delivery window",
-      "Delivery exception handling with automatic notification triggers"
+      "Multi-carrier webhook ingestion with deduplication and normalized event schemas",
+      "Interactive tracking page with dynamic interactive map and estimated delivery window"
     ],
     "out_of_scope": [
-      "Settlement protocol modifications"
+      "Integration with carriers not listed (FedEx, UPS, DHL, USPS)"
     ]
   },
   "mcp_skills": [
@@ -46,18 +43,18 @@
     }
   ],
   "mcp_context_package": {
-    "context_package_id": "ctx-pkg-e9a429d1",
+    "context_package_id": "ctx-pkg-bebf08e6",
     "query_interpretation": {
       "intent": "prd_context_generation",
-      "change_summary": "Real-time shipment milestone notifications and delivery tracking.",
+      "change_summary": "Implement capabilities for string.",
       "detected_entities": {
         "business_capabilities": [
-          "order tracking",
-          "carrier webhook ingestion",
-          "event notification"
+          "string management",
+          "core processing",
+          "event ingestion"
         ],
         "applications": [
-          "Order Tracking Service"
+          "String Service"
         ],
         "source_families": [
           "jira",
@@ -70,45 +67,45 @@
       {
         "reference_id": "ref-prd-001",
         "source_type": "prior_prd",
-        "title": "Order Management System v1.2 PRD",
+        "title": "String Foundation PRD",
         "relevance": "high",
-        "reason_for_relevance": "Prior architecture baseline for Logistics & Fulfillment.",
-        "snippet": "Order state updates must emit domain events to downstream consumer notifications.",
-        "link": "https://confluence.corp.internal/display/LOGISTICS/Order+Management+System+v1.2+PRD"
+        "reason_for_relevance": "Prior architecture baseline for String Domain.",
+        "snippet": "Baseline architecture and data modeling for String.",
+        "link": "https://confluence.corp.internal/display/S/String+Foundation+PRD"
       },
       {
         "reference_id": "ref-prd-002",
         "source_type": "jira_epic",
-        "source_id": "ORD-100",
-        "title": "Provide real-time shipment status updates and carrier milestone alerts",
+        "source_id": "S-100",
+        "title": "Deliver String capability enhancements",
         "relevance": "high",
         "reason_for_relevance": "Active business initiative in Jira.",
-        "snippet": "Objective: Provide real-time shipment status updates and carrier milestone alerts.",
-        "link": "https://jira.corp.internal/browse/ORD-100"
+        "snippet": "Objective: Deliver String capability enhancements.",
+        "link": "https://jira.corp.internal/browse/S-100"
       },
       {
         "reference_id": "ref-prd-003",
         "source_type": "domain_doc",
-        "title": "Logistics Carrier Integration & Webhook Standards",
+        "title": "String Architecture and API Standards",
         "relevance": "medium",
         "reason_for_relevance": "Enterprise domain architecture policy and standards.",
-        "snippet": "Carrier webhook updates must be processed asynchronously via Kafka within 500ms.",
-        "link": "https://confluence.corp.internal/display/LOGISTICS/Standards"
+        "snippet": "All String APIs must be RESTful and return responses within 100ms.",
+        "link": "https://confluence.corp.internal/display/S/Standards"
       },
       {
         "reference_id": "ref-prd-004",
         "source_type": "code_reference",
-        "repository": "order-tracking-service",
-        "file_path": "src/tracking/CarrierWebhookDispatcher.java",
+        "repository": "string-service",
+        "file_path": "src/core/StringManager.java",
         "relevance": "medium",
         "reason_for_relevance": "Core domain code handler in Git.",
-        "snippet": "processCarrierStatusUpdate(carrierPayload)",
-        "link": "https://git.corp.internal/order-tracking-service/blob/main/src/tracking/CarrierWebhookDispatcher.java"
+        "snippet": "executeStringWorkflow(requestContext)",
+        "link": "https://git.corp.internal/string-service/blob/main/src/core/StringManager.java"
       }
     ],
     "candidate_signals": {
       "business_goals": [
-        "Improve throughput and operational efficiency in Logistics & Fulfillment",
+        "Improve throughput and operational efficiency in String Domain",
         "Reduce manual intervention and customer wait time"
       ],
       "possible_prd_sections": [
@@ -122,14 +119,13 @@
         "open questions"
       ],
       "likely_impacted_capabilities": [
-        "order tracking",
-        "carrier webhook ingestion",
-        "event notification"
+        "string management",
+        "core processing",
+        "event ingestion"
       ]
     },
     "gaps_or_questions": [
-      "Need confirmation of carrier partner SLA and webhook timeout thresholds.",
-      "Need target delivery date prediction accuracy metric."
+      "Need confirmation of target volume and latency SLAs for String."
     ],
     "conflicts": [],
     "permission_exclusions": [],
@@ -156,7 +152,7 @@
         "arguments": {
           "search_context": {
             "requested_by": "team_admin",
-            "active_team_id": "team-logistics-product"
+            "active_team_id": "team-checkout-product"
           },
           "filters": {
             "capability_need": "prd_generation",
@@ -196,7 +192,7 @@
             "user_reference": "user-123"
           },
           "apex_scope": {
-            "active_team_id": "team-logistics-product",
+            "active_team_id": "team-checkout-product",
             "scope_profile_id": "scope-checkout-v1",
             "business_hints": {
               "portfolios": [
@@ -241,7 +237,7 @@
           },
           "query": {
             "query_type": "natural_language",
-            "text": "Create a PRD/context brief for business requirements document real-time order fulfillment and shipment tracking."
+            "text": "string"
           },
           "retrieval_request": {
             "context_needed": [
@@ -268,11 +264,8 @@
     }
   },
   "problem": "E-commerce buyers currently receive vague shipment status updates ('In Transit'), resulting in 42% of customer support inquiries ('Where Is My Order?' / WISMO). Furthermore, delivery exceptions and carrier delays are not proactively communicated to customers until after promised delivery dates pass.",
-  "needs": [
-    "End-to-end milestone visibility from warehouse dispatch to doorstep delivery",
-    "Automated proactive SMS and email notifications upon transit milestone updates or carrier exception delays"
-  ],
+  "needs": [],
   "expected_impact": [
-    "Reduce WISMO customer support inquiries by 50% within 3 months of launch"
+    "Reduce WISMO customer support inquiries by 50% within 3 months of launch."
   ]
 }
