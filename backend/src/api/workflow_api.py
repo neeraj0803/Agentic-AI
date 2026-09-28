@@ -32,7 +32,7 @@ async def upload_and_run_workflow(
     file: UploadFile = File(...),
     active_team_id: str = Form("team-checkout-product"),
     query_override: Optional[str] = Form(None),
-    auto_approve_hitl: bool = Form(True),
+    auto_approve_hitl: bool = Form(None),
     reviewer_comments: Optional[str] = Form(None),
     target_publish_platform: Literal["jira", "confluence", "both"] = Form("both")
 ):

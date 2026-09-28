@@ -11,6 +11,8 @@ from .prd_reviewer_service import PRDReviewerService
 from .hitl_service import HITLService
 from .publish_service import PublishService
 from ..mcp import InProcessMCPClient
+from ..agents.evidence_analyzer import evidence_analyzer_node
+from ..config import settings
 
 
 class WorkflowOrchestratorService:
@@ -47,7 +49,7 @@ class WorkflowOrchestratorService:
         original_document_name: Optional[str] = None,
         active_team_id: str = "team-checkout-product",
         query_override: Optional[str] = None,
-        auto_approve_hitl: bool = True,
+        auto_approve_hitl: bool = False,
         reviewer_comments: Optional[str] = None,
         target_publish_platform: Literal["jira", "confluence", "both"] = "both"
     ) -> Dict[str, Any]:
@@ -117,36 +119,153 @@ class WorkflowOrchestratorService:
         # Substep 4: Detect gaps, assumptions, and ambiguity
         # -------------------------------------------------------------------
         gap_report = self.gap_service.analyze_gaps(context_analysis)
-        is_sufficient = gap_report.get("is_sufficient", True)
 
         log_step("D_Gap_Analyzer", "3. Gap Analyzer", "completed", {
             "sufficiency_score": gap_report.get("sufficiency_score"),
-            "is_sufficient": is_sufficient,
+            "is_sufficient": gap_report.get("is_sufficient", True),
             "gaps_count": len(gap_report.get("identified_gaps", [])),
             "conflicts_count": len(gap_report.get("detected_conflicts", [])),
             "conflicts": gap_report.get("detected_conflicts", []),
             "unvalidated_assumptions": gap_report.get("unvalidated_assumptions", [])
         })
 
-        # Flowchart Decision E: Context & Evidence Sufficient?
-        if not is_sufficient:
-            log_step("E_Context_Sufficient_Decision", "Context & Evidence Sufficient?", "failed_insufficient_evidence", {
-                "decision": "No - Missing Context / Weak Evidence",
-                "recommended_clarifications": gap_report.get("recommended_clarifications", [])
+        evidence_report = None
+
+        if auto_approve_hitl:
+            evidence_report = evidence_analyzer_node(context_analysis)
+            is_sufficient = evidence_report["sufficient"]
+
+            log_step(
+                "E_Evidence_Analyzer",
+                "Evidence Analyzer",
+                "completed",
+                evidence_report
+            )
+        else:
+            # Preserve the existing gap-analyzer decision when HITL auto-approval is off.
+            is_sufficient = gap_report.get("is_sufficient", True)
+
+        if not is_sufficient and auto_approve_hitl:
+            supplementary_path = r"D:\Agentic-AI\backend\sample_data\cloud_cost_optimizer_brd.md"
+
+            log_step(
+                "I_HITL_Context_Request",
+                "Requesting supplementary context",
+                "invoked",
+                {
+                    "missing_context": evidence_report.get("missing_context", []),
+                    "weak_evidence": evidence_report.get("weak_evidence", []),
+                    "rationale": evidence_report.get("rationale", ""),
+                    "supplementary_file_configured": bool(supplementary_path),
+                }
+            )
+
+            if not supplementary_path or not Path(supplementary_path).is_file():
+                session_state["status"] = "waiting_for_hitl_context"
+                session_state["context_analysis"] = context_analysis
+                session_state["gap_report"] = gap_report
+                session_state["evidence_analysis"] = evidence_report
+
+                return {
+                    "session_id": session_id,
+                    "status": "needs_more_context",
+                    "gap_report": gap_report,
+                    "evidence_analysis": evidence_report,
+                    "context_analysis": context_analysis,
+                    "message": (
+                        "Evidence is insufficient. HITL was invoked, but no valid "
+                        "supplementary context file is configured."
+                    ),
+                }
+
+            supplementary_text = DocumentExtractorService.extract_text(
+                supplementary_path
+            )
+            combined_text = (
+                f"{extracted_text}\n\n"
+                "Additional context supplied during HITL review:\n"
+                f"{supplementary_text}"
+            )
+
+            log_step(
+                "I_HITL_Context_Request",
+                "Supplementary context file read",
+                "completed",
+                {
+                    "file_name": Path(supplementary_path).name,
+                    "characters_extracted": len(supplementary_text),
+                }
+            )
+
+            context_analysis = self.context_service.analyze(
+                document_name=doc_name,
+                extracted_text=combined_text,
+                active_team_id=active_team_id,
+                query_override=query_override,
+            )
+            log_step("C_Context_Analyzer", "2. Context Analyzer (HITL retry)", "completed", {
+                "problem_statement": context_analysis.get("problem_statement"),
+                "business_goal": context_analysis.get("business_goal"),
+                "evidence_items": len(context_analysis.get("evidence", [])),
             })
+
+            gap_report = self.gap_service.analyze_gaps(context_analysis)
+            log_step("D_Gap_Analyzer", "3. Gap Analyzer (HITL retry)", "completed", {
+                "sufficiency_score": gap_report.get("sufficiency_score"),
+                "is_sufficient": gap_report.get("is_sufficient", True),
+                "gaps_count": len(gap_report.get("identified_gaps", [])),
+                "conflicts_count": len(gap_report.get("detected_conflicts", [])),
+            })
+
+            evidence_report = evidence_analyzer_node(context_analysis)
+            is_sufficient = evidence_report["sufficient"]
+            log_step(
+                "E_Evidence_Analyzer",
+                "Evidence Analyzer (HITL retry)",
+                "completed",
+                evidence_report
+            )
+
+        if not is_sufficient:
+            log_step(
+                "E_Context_Sufficient_Decision",
+                "Context & Evidence Sufficient?",
+                "failed_insufficient_evidence",
+                {
+                    "decision": "No - Missing Context / Weak Evidence",
+                    "recommended_clarifications": gap_report.get(
+                        "recommended_clarifications", []
+                    ),
+                    "evidence_analysis": evidence_report,
+                }
+            )
             session_state["status"] = "paused_missing_context"
+            session_state["context_analysis"] = context_analysis
+            session_state["gap_report"] = gap_report
+            session_state["evidence_analysis"] = evidence_report
+
             return {
                 "session_id": session_id,
                 "status": "needs_more_context",
                 "gap_report": gap_report,
+                "evidence_analysis": evidence_report,
                 "context_analysis": context_analysis,
-                "message": "Context & evidence are insufficient. Human feedback or additional documentation required."
+                "message": (
+                    "Context and evidence remain insufficient after HITL context "
+                    "was analyzed."
+                ),
             }
 
-        log_step("E_Context_Sufficient_Decision", "Context & Evidence Sufficient?", "passed", {
-            "decision": "Yes - Sufficient Evidence & Context",
-            "score": gap_report.get("sufficiency_score")
-        })
+        log_step(
+            "E_Context_Sufficient_Decision",
+            "Context & Evidence Sufficient?",
+            "passed",
+            {
+                "decision": "Yes - Sufficient Evidence & Context",
+                "score": gap_report.get("sufficiency_score"),
+                "evidence_analysis": evidence_report,
+            }
+        )
 
         # -------------------------------------------------------------------
         # Node F, G, H: PRD Generator, Reviewer, and Quality Loop
