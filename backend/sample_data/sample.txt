@@ -1,0 +1,16 @@
+Build an AI-powered customer support chatbot.
+ 
+Business Goal:
+Reduce support ticket volume by 40%.
+ 
+Users:
+Customers
+ 
+Features:
+- Conversational chat
+- FAQ retrieval
+- Escalation to human agent
+ 
+Constraints:
+- Must comply with GDPR
+- Response time < 2 seconds

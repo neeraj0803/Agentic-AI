@@ -1,15 +1,130 @@
-.architecture-page { width: 100%; height: 100vh; display: flex; flex-direction: column; background: #f7f9fc; color: #202832; }
-.architecture-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 42px 24px; border-bottom: 1px solid #dce2eb; background: #fff; }
-.architecture-kicker { margin: 0 0 8px; color: #2459d6; font: 600 10px 'DM Mono', monospace; letter-spacing: .12em; text-transform: uppercase; }
-.architecture-header h1 { margin: 0; font-size: clamp(22px, 3vw, 32px); letter-spacing: -.04em; }
-.architecture-header p:last-child { margin: 8px 0 0; color: #778292; font-size: 13px; }
-.architecture-back { flex: 0 0 auto; padding: 10px 14px; border: 1px solid #d5dce7; border-radius: 7px; color: #2459d6; background: #fff; font-size: 12px; text-decoration: none; }
-.architecture-back:hover { border-color: #2459d6; background: #f1f5ff; }
-.architecture-canvas { position: relative; flex: 1 1 auto; width: 100%; min-height: 500px; height: calc(100vh - 124px); }
-.architecture-canvas .react-flow { width: 100%; height: 100%; }
-.architecture-canvas .react-flow__node { min-width: 172px; padding: 14px 16px; border: 1px solid #cdd6e3; border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgba(44, 58, 77, .08); color: #263241; font: 600 12px/1.45 'Manrope', sans-serif; white-space: pre-line; }
-.architecture-canvas .architecture-node-input { border-color: #91adf1; background: #f1f5ff; }
-.architecture-canvas .architecture-node-output { border-color: #e1b17c; background: #fff7ed; }
-.architecture-canvas .react-flow__edge-text { fill: #667386; font-size: 10px; }
-.architecture-canvas .react-flow__edge-textbg { fill: #f7f9fc; }
-@media (max-width: 700px) { .architecture-header { align-items: flex-start; flex-direction: column; padding: 22px; } .architecture-canvas { height: calc(100vh - 190px); } }
+.architecture-page {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.architecture-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 42px;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.architecture-kicker {
+  margin: 0 0 6px;
+  color: var(--color-accent, #2563eb);
+  font: 600 12px 'DM Mono', monospace; /* +2px (was 10px) */
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.architecture-header h1 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 34px); /* +2px (was clamp(22px, 3vw, 32px)) */
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.architecture-header p:last-child {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 15px; /* +2px (was 13px) */
+  line-height: 1.5;
+}
+
+.architecture-back {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: var(--color-accent, #2563eb);
+  background: #ffffff;
+  font-size: 14px; /* +2px (was 12px) */
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.architecture-back:hover {
+  border-color: var(--color-accent, #2563eb);
+  background: #eff6ff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
+}
+
+.architecture-canvas {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 500px;
+  height: calc(100vh - 124px);
+}
+
+.architecture-canvas .react-flow {
+  width: 100%;
+  height: 100%;
+}
+
+.architecture-canvas .react-flow__node {
+  min-width: 180px;
+  padding: 16px 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
+  color: #1e293b;
+  font: 600 14px/1.5 'Manrope', sans-serif; /* +2px (was 12px) */
+  white-space: pre-line;
+  transition: all 0.2s ease;
+}
+
+.architecture-canvas .react-flow__node:hover {
+  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.14);
+}
+
+.architecture-canvas .architecture-node-input {
+  border-color: #93c5fd;
+  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+  color: #1e40af;
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.12);
+}
+
+.architecture-canvas .architecture-node-output {
+  border-color: #fed7aa;
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+  color: #9a3412;
+  box-shadow: 0 8px 24px -4px rgba(234, 88, 12, 0.12);
+}
+
+.architecture-canvas .react-flow__edge-text {
+  fill: #475569;
+  font-size: 12px; /* +2px (was 10px) */
+  font-weight: 500;
+}
+
+.architecture-canvas .react-flow__edge-textbg {
+  fill: #f8fafc;
+  rx: 4px;
+}
+
+@media (max-width: 768px) {
+  .architecture-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px;
+  }
+  .architecture-canvas {
+    height: calc(100vh - 190px);
+  }
+}
