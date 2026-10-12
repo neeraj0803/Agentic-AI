@@ -99,4 +99,4 @@ async def get_worker_info():
 
 @router.get("/health")
 async def health():
-    return {"status": "UP", "service": "agent-worker"}
+    return {"status": "UP", "service": "agent-worker", "orchestrator": "ok"}

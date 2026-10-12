@@ -339,7 +339,8 @@ class WorkerGraphExecutor:
                     "checkpoint_type": "APPROVAL",
                     "state_snapshot": {
                         "jira_story_id": jira_id,
-                        "review_package": review_package
+                        "review_package": review_package,
+                        "coverage_matrix": coverage
                     },
                     "metadata": {"total_scenarios": len(candidates)}
                 }

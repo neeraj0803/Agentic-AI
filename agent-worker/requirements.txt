@@ -1,0 +1,24 @@
+# Core API Framework & Server
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+
+# HTTP & Client Tools
+httpx>=0.27.0
+python-dotenv>=1.0.0
+pyyaml>=6.0
+
+# LangGraph & LLM Orchestration
+langgraph>=0.2.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+openai>=1.0.0
+
+# Optional LiteLLM proxy support
+litellm>=1.30.0
+
+# Observability & Distributed Tracing
+opentelemetry-api>=1.24.0
+opentelemetry-sdk>=1.24.0
+

@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .api.worker_api import router as worker_router
+from .api.workflow_api import router as workflow_router
 from .config import settings
 from .telemetry import worker_logger
 
@@ -17,10 +18,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Agent Worker Service",
-    description="Agent Worker runtime executing continuous LangGraph workflows with durable checkpoints.",
+    title="Agent Worker & Dynamic Workflow Orchestrator Service",
+    description="Agent Worker runtime executing continuous LangGraph workflows with durable checkpoints and dynamic orchestration.",
     version=settings.version,
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -32,6 +33,7 @@ app.add_middleware(
 )
 
 app.include_router(worker_router)
+app.include_router(workflow_router)
 
 
 @app.get("/")
@@ -40,5 +42,5 @@ def root():
         "service": "Agent Worker Service",
         "version": settings.version,
         "status": "online",
-        "runtime": "LangGraph Continuous Execution Window"
+        "runtime": "LangGraph Continuous Execution Window & Dynamic Workflow Orchestrator",
     }
