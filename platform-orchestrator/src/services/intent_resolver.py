@@ -24,7 +24,13 @@ class IntentResolver:
             "AG-501": ["adr", "architecture", "c4 diagram", "architecture decision", "tradeoff", "system design", "tech stack"]
         }
 
-    def resolve_intent(self, user_prompt: str, team_id: Optional[str] = None) -> Dict[str, Any]:
+    def resolve_intent(
+        self,
+        user_prompt: str,
+        team_id: Optional[str] = None,
+        context_hints: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
         """Resolves natural language user query to matching agent workflow."""
         prompt_lower = user_prompt.lower()
         scores: Dict[str, float] = {}

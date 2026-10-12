@@ -48,10 +48,29 @@ class RunLifecycleService:
     async def create_and_dispatch_run(self, req: CreateRunRequest) -> Dict[str, Any]:
         """Validates preflight, compiles snapshot, creates run, and initiates dispatch."""
         with trace_span("orchestrator.create_and_dispatch_run") as span:
+            # Check for existing run by idempotency key
+            if req.idempotency_key:
+                existing_run = self.storage.get_run_by_idempotency_key(req.idempotency_key)
+                if existing_run:
+                    logger.info(
+                        f"Idempotency match found for key '{req.idempotency_key}'. Returning existing run {existing_run.get('run_id')}",
+                        run_id=existing_run.get("run_id")
+                    )
+                    return existing_run
+
             policy_ver = req.policy_version or settings.default_policy_version
             timeout_s = req.timeout_seconds or settings.default_timeout_seconds
             run_id = f"RUN-{uuid.uuid4().hex[:8].upper()}"
             span.run_id = run_id
+
+            # Ingest dummy defaults if input_data is empty or missing essential fields
+            if not req.input_data or len(req.input_data) == 0:
+                req.input_data = workflow_registry.get_default_dummy_inputs(req.agent_name)
+            else:
+                defaults = workflow_registry.get_default_dummy_inputs(req.agent_name)
+                for k, v in defaults.items():
+                    if k not in req.input_data or req.input_data[k] in (None, ""):
+                        req.input_data[k] = v
 
             # 1. Preflight Validation Gate
             if not req.skip_preflight:

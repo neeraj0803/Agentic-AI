@@ -842,6 +842,19 @@ class OrchestratorStorage:
     # Run Lifecycle Methods (agent_run & orchestrator_runs)
     # -------------------------------------------------------------------
 
+    def get_run_by_idempotency_key(self, idempotency_key: str) -> Optional[Dict[str, Any]]:
+        """Look up an existing agent run by its idempotency key."""
+        if not idempotency_key:
+            return None
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT run_id FROM agent_run WHERE idempotency_key = ?", (idempotency_key,))
+            row = cursor.fetchone()
+            if row:
+                run_id = row["run_id"] if isinstance(row, dict) or hasattr(row, "__getitem__") else row[0]
+                return self.get_run(run_id)
+            return None
+
     def create_run(
         self,
         agent_name: str,
@@ -857,11 +870,16 @@ class OrchestratorStorage:
         idempotency_key: Optional[str] = None,
         trace_id: Optional[str] = None
     ) -> Dict[str, Any]:
+        if idempotency_key:
+            existing = self.get_run_by_idempotency_key(idempotency_key)
+            if existing:
+                return existing
+
         run_id = run_id or f"RUN-{uuid.uuid4().hex[:8].upper()}"
         user_id = user_id or "usr-architect-01"
         trace_id = trace_id or uuid.uuid4().hex
         resolved_workflow_id = resolved_workflow_id or f"rwf_{agent_name}_{uuid.uuid4().hex[:8]}"
-        idempotency_key = idempotency_key or f"idemp_{run_id}"
+        idempotency_key = idempotency_key or f"idemp_{run_id}_{uuid.uuid4().hex[:6]}"
         now = datetime.now(timezone.utc).isoformat()
 
         with self._get_connection() as conn:
@@ -938,6 +956,27 @@ class OrchestratorStorage:
 
         return self.get_run(run_id)
 
+    @staticmethod
+    def _map_state_to_macro_status(run_state: Optional[str]) -> str:
+        if not run_state:
+            return "QUEUED"
+        mapping = {
+            "queued": "QUEUED",
+            "running": "RUNNING",
+            "step_running": "RUNNING",
+            "paused_for_validation": "WAITING_FOR_CLARIFICATION",
+            "awaiting_clarification": "WAITING_FOR_CLARIFICATION",
+            "waiting_for_clarification": "WAITING_FOR_CLARIFICATION",
+            "awaiting_approval": "WAITING_FOR_APPROVAL",
+            "waiting_for_approval": "WAITING_FOR_APPROVAL",
+            "completed": "COMPLETED",
+            "failed": "FAILED",
+            "cancelled": "CANCELLED",
+            "rejected": "REJECTED",
+            "dead_lettered": "DEAD_LETTERED"
+        }
+        return mapping.get(run_state.lower(), run_state.upper())
+
     def get_run(self, run_id: str) -> Optional[Dict[str, Any]]:
         with self._get_connection() as conn:
             cursor = conn.cursor()
@@ -947,7 +986,8 @@ class OrchestratorStorage:
             if row:
                 data = dict(row)
                 data["agent_name"] = data.get("agent_id")
-                data["status"] = data.get("run_state", "queued")
+                data["run_state"] = data.get("run_state", "queued")
+                data["status"] = self._map_state_to_macro_status(data["run_state"])
                 data["policy_version"] = "2026.Q3"
                 data["created_at"] = data.get("queued_at")
                 data["updated_at"] = data.get("completed_at") or data.get("started_at") or data.get("queued_at")
@@ -969,6 +1009,7 @@ class OrchestratorStorage:
             if not legacy_row:
                 return None
             ldata = dict(legacy_row)
+            ldata["status"] = self._map_state_to_macro_status(ldata.get("status"))
             if ldata.get("input_data"):
                 try:
                     ldata["input_data"] = json.loads(ldata["input_data"])
@@ -1009,7 +1050,8 @@ class OrchestratorStorage:
             for r in rows:
                 item = dict(r)
                 item["agent_name"] = item.get("agent_id")
-                item["status"] = item.get("run_state", "queued")
+                item["run_state"] = item.get("run_state", "queued")
+                item["status"] = self._map_state_to_macro_status(item["run_state"])
                 item["policy_version"] = "2026.Q3"
                 item["created_at"] = item.get("queued_at")
                 item["updated_at"] = item.get("completed_at") or item.get("started_at") or item.get("queued_at")

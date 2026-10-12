@@ -94,6 +94,26 @@ class TestPlatformOrchestrator(unittest.TestCase):
         self.assertEqual(data["agent_id"], "AG-201")
         self.assertEqual(data["blockers_count"], 0)
 
+    def test_resolve_intent_endpoints(self):
+        """Validates intent resolution on both standard and colon-suffixed paths."""
+        payload = {
+            "user_prompt": "Write automated test cases and BDD gherkin scenarios",
+            "team_id": "team-checkout-qe",
+            "context_hints": {"domain": "QE"}
+        }
+        # Standard route
+        res1 = self.client.post("/api/orchestrator/agents/resolve-intent", json=payload)
+        self.assertEqual(res1.status_code, 200)
+        data1 = res1.json()
+        self.assertEqual(data1["top_agent_id"], "AG-201")
+        self.assertGreaterEqual(data1["confidence_score"], 0.8)
+
+        # Colon route
+        res2 = self.client.post("/api/orchestrator/agents:resolve-intent", json=payload)
+        self.assertEqual(res2.status_code, 200)
+        data2 = res2.json()
+        self.assertEqual(data2["top_agent_id"], "AG-201")
+
     def test_run_creation_and_version_locking(self):
         """Validates run ID generation, version locking, and initial queuing."""
         payload = {
@@ -117,6 +137,19 @@ class TestPlatformOrchestrator(unittest.TestCase):
         self.assertEqual(data["agent_version"], "v1.0")
         self.assertEqual(data["policy_version"], "2026.Q3")
         self.assertEqual(data["team_id"], "team-checkout-qe")
+
+    def test_minimal_payload_run_creation_with_dummy_fallback(self):
+        """Validates that a run created with minimal or empty input gracefully auto-populates dummy defaults."""
+        payload = {
+            "agent_name": "qe_test_case_generation_agent",
+            "skip_preflight": False
+        }
+        res = self.client.post("/api/orchestrator/runs", json=payload)
+        self.assertEqual(res.status_code, 201)
+        data = res.json()
+        self.assertTrue(data["run_id"].startswith("RUN-"))
+        self.assertIsNotNone(data["input_data"])
+        self.assertIn("jira_story_id", data["input_data"])
 
     def test_missing_input_clarification_cycle(self):
         """
@@ -224,6 +257,31 @@ class TestPlatformOrchestrator(unittest.TestCase):
         )
         self.assertEqual(cancel_res.status_code, 200)
         self.assertIn(cancel_res.json()["status"], ["CANCELLED", "cancelled"])
+
+
+    def test_idempotent_run_creation(self):
+        """Tests that reusing the same idempotency key returns the existing run."""
+        idempotency_key = "idemp_test_unique_key_123"
+        payload = {
+            "agent_name": "qe_test_case_generation_agent",
+            "team_id": "team-checkout-qe",
+            "skip_preflight": True,
+            "idempotency_key": idempotency_key,
+            "input_data": {
+                "jira_story_id": "CHK-IDEMP-01",
+                "acceptance_criteria": ["Test idempotency support"]
+            }
+        }
+        res1 = self.client.post("/api/orchestrator/runs", json=payload)
+        self.assertIn(res1.status_code, [200, 201])
+        run_id_1 = res1.json()["run_id"]
+
+        # Call again with the exact same idempotency_key
+        res2 = self.client.post("/api/orchestrator/runs", json=payload)
+        self.assertIn(res2.status_code, [200, 201])
+        run_id_2 = res2.json()["run_id"]
+
+        self.assertEqual(run_id_1, run_id_2)
 
 
 if __name__ == "__main__":

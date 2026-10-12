@@ -66,6 +66,8 @@ class WorkflowRegistry:
         aliases = {
             "qe_test_case_generation_agent": "AG-201-write-test-cases",
             "prd_generation_agent": "AG-101-prd-generation",
+            "product_prd_or_context_brief": "AG-101-prd-generation",
+            "product_prd_or_context_brief_agent": "AG-101-prd-generation",
             "code_generation_agent": "AG-301-code-generation",
             "architecture_adr_agent": "AG-501-architecture-adr",
         }
@@ -137,7 +139,7 @@ class WorkflowRegistry:
         missing_fields = []
         validated_inputs = {}
 
-        # Normalize common aliases: synthesize requirement_ref if jira_story_id or acceptance_criteria present
+        # Normalize common aliases: synthesize requirement_ref or business_initiative
         normalized_data = dict(input_data)
         if "requirement_ref" not in normalized_data:
             if "jira_story_id" in normalized_data or "acceptance_criteria" in normalized_data:
@@ -153,6 +155,17 @@ class WorkflowRegistry:
                     else:
                         parts.append(str(ac))
                 normalized_data["requirement_ref"] = " - ".join(parts)
+
+        if "business_initiative" not in normalized_data:
+            parts = []
+            if "title" in normalized_data and normalized_data["title"]:
+                parts.append(str(normalized_data["title"]))
+            if "stakeholder_inputs" in normalized_data and normalized_data["stakeholder_inputs"]:
+                parts.append(str(normalized_data["stakeholder_inputs"]))
+            if "initiative_name" in normalized_data and normalized_data["initiative_name"]:
+                parts.append(str(normalized_data["initiative_name"]))
+            if parts:
+                normalized_data["business_initiative"] = " - ".join(parts)
 
         for inp in required_inputs:
             inp_id = inp.get("id")
@@ -198,6 +211,52 @@ class WorkflowRegistry:
             return []
         missing = res.get("missing_fields", [])
         return [m.get("field_id") for m in missing]
+
+    def get_default_dummy_inputs(self, identifier: str) -> Dict[str, Any]:
+        """Provides rich dummy mock inputs for any agent workflow when triggered from UI or test clients."""
+        norm_id = identifier.upper() if identifier else ""
+        if "101" in norm_id or "PRD" in norm_id:
+            return {
+                "business_initiative": "Checkout Resiliency & Idempotency: Prevent duplicate payment authorizations during network transient spikes.",
+                "initiative_name": "Checkout Resiliency & Idempotency",
+                "problem_statement": "Prevent duplicate payment authorizations during network transient spikes.",
+                "target_persona": "Enterprise Shopper",
+                "scope": "Order checkout processing flow"
+            }
+        elif "102" in norm_id or "EPIC" in norm_id:
+            return {
+                "prd_reference": "PRD-2026-CHECKOUT-RESILIENCY",
+                "epic_title": "Idempotent Payment Retry Orchestration",
+                "scope_boundaries": "Payment Gateway and Order API"
+            }
+        elif "201" in norm_id or "QE" in norm_id or "TEST" in norm_id:
+            return {
+                "jira_story_id": "CHK-4091",
+                "application_name": "Checkout Payment Service",
+                "acceptance_criteria": [
+                    "Payment transaction must retry up to 3 times on transient network error (HTTP 503)",
+                    "If card is expired or declined (HTTP 402), do not retry and display user-friendly message",
+                    "Idempotency key must be preserved across retries to prevent duplicate charges"
+                ],
+                "requirement_ref": "CHK-4091 Checkout Payment Service: Payment transaction retry on HTTP 503 with idempotency preservation",
+                "target_output_format": "xray_bdd"
+            }
+        elif "301" in norm_id or "CODE" in norm_id:
+            return {
+                "jira_story_id": "CHK-5502",
+                "feature_description": "FastAPI REST endpoint for idempotency verification and token validation",
+                "target_language": "python"
+            }
+        elif "501" in norm_id or "ADR" in norm_id or "ARCH" in norm_id:
+            return {
+                "decision_topic": "Kafka Event Streaming for Payment Notifications",
+                "context": "Evaluate Kafka vs RabbitMQ for guaranteed order event delivery",
+                "scope": "Checkout Platform"
+            }
+        return {
+            "requirement_ref": "Default requirement reference for agent workflow execution",
+            "application_name": "Digital Checkout Platform"
+        }
 
     def extract_required_context(self, identifier: str) -> List[str]:
         """Extracts required context capabilities for the workflow."""

@@ -1,0 +1,78 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20261012154555
+Username: IND\AN126165
+RunAs User: IND\AN126165
+Configuration Name: 
+Machine: MACYW42NLPC4271 (Microsoft Windows NT 10.0.26200.0)
+Host Application: powershell -Command $env:TEMP = $env:_TEMP; $env:TMP = $env:_TMP; $env:LOCALAPPDATA = $env:_LOCALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py"
+Process ID: 452
+PSVersion: 5.1.26100.9444
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9444
+BuildVersion: 10.0.26100.9444
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+PS>$env:TEMP = $env:_TEMP; $env:TMP = $env:_TMP; $env:LOCALAPPDATA = $env:_LOCALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py"
+>> TerminatingError(): "Program 'python.exe' failed to run: Win32 internal error "Access is denied" 0x5 occurred while reading the console output buffer. Contact Microsoft Customer Support Services.At line:1 char:87
++ ... CALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~."
+**********************
+Windows PowerShell transcript start
+Start time: 20261012154602
+Username: IND\AN126165
+RunAs User: IND\AN126165
+Configuration Name: 
+Machine: MACYW42NLPC4271 (Microsoft Windows NT 10.0.26200.0)
+Host Application: powershell -Command $env:TEMP = $env:_TEMP; $env:TMP = $env:_TMP; $env:LOCALAPPDATA = $env:_LOCALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py"
+Process ID: 452
+PSVersion: 5.1.26100.9444
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9444
+BuildVersion: 10.0.26100.9444
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+PS>CommandInvocation(Out-String): "Out-String"
+>> ParameterBinding(Out-String): name="InputObject"; value="Program 'python.exe' failed to run: Win32 internal error "Access is denied" 0x5 occurred while reading the console output buffer. Contact Microsoft Customer Support Services.At line:1 char:87
++ ... CALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~."
+Program 'python.exe' failed to run: Win32 internal error "Access is denied" 0x5 occurred while reading the console 
+output buffer. Contact Microsoft Customer Support Services.At line:1 char:87
++ ... CALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.
+At line:1 char:87
++ ... CALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ResourceUnavailable: (:) [], ApplicationFailedException
+    + FullyQualifiedErrorId : NativeCommandFailed
+Program 'python.exe' failed to run: Win32 internal error "Access is denied" 0x5 occurred while reading the console 
+output buffer. Contact Microsoft Customer Support Services.At line:1 char:87
++ ... CALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.
+At line:1 char:87
++ ... CALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ResourceUnavailable: (:) [], ApplicationFailedException
+    + FullyQualifiedErrorId : NativeCommandFailed
+Program 'python.exe' failed to run: Win32 internal error "Access is denied" 0x5 occurred while reading the console
+output buffer. Contact Microsoft Customer Support Services.At line:1 char:87
++ ... CALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.
+At line:1 char:87
++ ... CALAPPDATA; ..\backend\.venv\Scripts\python.exe -m unittest discover  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ResourceUnavailable: (:) [], ApplicationFailedException
+    + FullyQualifiedErrorId : NativeCommandFailed
+
+PS>$global:?
+False
+**********************
+Windows PowerShell transcript end
+End time: 20261012154603
+**********************

@@ -34,7 +34,8 @@ async def get_agent_workflow(agent_id: str):
     return wf
 
 
-@router.post(":resolve-intent", response_model=ResolveIntentResponse)
+@router.post(":resolve-intent", response_model=ResolveIntentResponse, include_in_schema=False)
+@router.post("/resolve-intent", response_model=ResolveIntentResponse)
 async def resolve_agent_intent(req: ResolveIntentRequest):
     """
     Analyzes user text prompt and scores matching against published workflow catalog.
