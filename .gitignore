@@ -31,3 +31,6 @@ backend/*/__pycache__
 backend/*/*/__pycache__
 DesignSpec
 bff
+platform-orchestrator/2026**
+platform-orchestrator/*/__pycache__
+platform-orchestrator/*/*/__pycache__
