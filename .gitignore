@@ -20,3 +20,17 @@ GEMINI.md
 _agents/
 _agent/
 .gemini/
+2026**
+bff/2026**
+bff/.venv
+bff/.pytest_cache
+bff/src/__pycache__
+bff/*/*/__pycache__
+bff/tests/__pycache__
+backend/*/__pycache__
+backend/*/*/__pycache__
+DesignSpec
+bff
+platform-orchestrator/2026**
+platform-orchestrator/*/__pycache__
+platform-orchestrator/*/*/__pycache__
