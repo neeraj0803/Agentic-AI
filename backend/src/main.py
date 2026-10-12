@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api.context_api import router as context_router
 from .api.prd_api import router as prd_router
 from .api.confluence_api import router as confluence_router
+from .api.jira_api import router as jira_router
 from .api.workflow_api import router as workflow_router
 from .api.mcp_api import router as mcp_router
 
@@ -40,6 +41,12 @@ app.include_router(
 )
 
 app.include_router(
+    jira_router,
+    prefix="/jira",
+    tags=["Jira"]
+)
+
+app.include_router(
     prd_router,
     prefix="/prd",
     tags=["PRD Generator"]
@@ -52,4 +59,3 @@ app.include_router(
 app.include_router(
     mcp_router
 )
-

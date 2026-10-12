@@ -27,6 +27,12 @@ class AzureOpenAI(BaseModel):
     azure_openai_api_version: str | None = "2024-02-01"
 
 
+class JIRA(BaseModel):
+    base_url: str | None = None
+    email: str | None = None
+    api_token: str | None = None
+    cloud_id: str | None = None
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file="src/.env",
@@ -44,6 +50,7 @@ class Settings(BaseSettings):
     gemini: Gemini = Field(default_factory=Gemini)
     azure_openai: AzureOpenAI = Field(default_factory=AzureOpenAI)
     hitl_context_file_path: Optional[str] = None
+    jira: JIRA = Field(default_factory=JIRA)
 
 
 settings = Settings()
