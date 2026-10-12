@@ -1,0 +1,114 @@
+workflow_id: AG-101-prd-generation
+version: 1.0.0
+status: published
+agent:
+  id: AG-101
+  name: Product PRD & Context Brief Generator
+  description: Generates enterprise Product Requirements Documents (PRDs) and context briefs from high-level business ideas, tickets, or user notes.
+  domain: PRODUCT_MANAGEMENT
+channels:
+  allowed:
+    - platform_ui
+    - jira
+    - confluence
+    - slack
+run_modes:
+  intake: conversational
+  execution: async_langgraph
+  handoff:
+    dispatch_when: required_inputs_confirmed_and_preflight_passed
+    worker_backed_conversation: true
+    next_turn_minimum_input: configured_required_inputs
+inputs:
+  - id: business_initiative
+    type: string
+    required: true
+    prompt: Please describe the business initiative, problem statement, or target feature.
+    validation:
+      kind: min_length
+      min_length: 10
+  - id: target_persona
+    type: string
+    required: false
+    prompt: Who is the primary target persona (e.g. End User, Store Associate, DevOps Engineer)?
+    default: "End Customer"
+  - id: success_metrics
+    type: string
+    required: false
+    prompt: What are the primary KPIs or success metrics?
+    default: "Conversion rate, latency, user satisfaction"
+intake:
+  confirm_before_run: true
+  allow_context_override: true
+  allow_skill_selection: true
+  allow_user_added_context: true
+context:
+  required_capabilities:
+    - business_requirements
+    - architecture_standards
+    - domain_glossary
+  available_packs:
+    - pack_id: ctx_enterprise_brd
+      name: Enterprise Baseline BRD & Principles
+      description: Core architectural standards, FinOps rules, and business objectives.
+    - pack_id: ctx_checkout_domain
+      name: Checkout & Payments Domain Glossary
+      description: Domain entity models, payment retry policies, and error taxonomy.
+skills:
+  required:
+    - capability: prd_section_generator
+      selection: deterministic
+      skill_id: skl_prd_authoring
+  available_dynamic:
+    - capability: competitor_benchmarking
+      skill_id: skl_market_analysis
+      name: Market & Competitor Analysis
+    - capability: compliance_checker
+      skill_id: skl_pci_soc2_compliance
+      name: PCI-DSS & SOC2 Compliance Guardrail
+model_policy_ref: gemini_2_5_pro_advanced_reasoning
+graph:
+  nodes:
+    - id: extract_context
+      type: context_call
+      checkpoint: after
+    - id: draft_prd
+      type: model_call
+      checkpoint: after
+    - id: validate_requirements
+      type: human_validation
+      checkpoint: before_and_after
+      max_attempts: 3
+      resume_to: draft_prd
+    - id: format_dual_output
+      type: artifact
+      checkpoint: after
+    - id: approval_before_write
+      type: human_approval
+      required: true
+      reviewer: initiating_user
+      max_rework: 3
+      rework_resume_to: draft_prd
+    - id: write_to_confluence
+      type: rest_connector_write
+      connector_ref: confluence_rest
+      execute_only_after_approval: true
+  edges:
+    - from: extract_context
+      to: draft_prd
+    - from: draft_prd
+      to: validate_requirements
+    - from: validate_requirements
+      to: format_dual_output
+    - from: format_dual_output
+      to: approval_before_write
+    - from: approval_before_write
+      to: write_to_confluence
+outputs:
+  artifacts:
+    - prd_markdown_document
+    - prd_structured_json
+failure_policy:
+  dependency_retry: bounded
+  terminal_state_on_unrecoverable_error: failed
+

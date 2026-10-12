@@ -1,0 +1,128 @@
+workflow_id: AG-201-write-test-cases
+version: 1.0.0
+status: published
+agent:
+  id: AG-201
+  name: QE Test Case Generator from Requirements
+  description: Analyzes PRDs and acceptance criteria to generate comprehensive, scenario-based QE test cases with BDD Gherkin formatting.
+  domain: QUALITY_ENGINEERING
+channels:
+  allowed:
+    - platform_ui
+    - jira
+    - confluence
+    - slack
+run_modes:
+  intake: conversational
+  execution: async_langgraph
+  handoff:
+    dispatch_when: required_inputs_confirmed_and_preflight_passed
+    worker_backed_conversation: true
+    next_turn_minimum_input: configured_required_inputs
+inputs:
+  - id: requirement_ref
+    type: source_reference
+    required: true
+    prompt: Please provide the PRD text, feature description, or requirement URL.
+    validation:
+      kind: min_length
+      min_length: 15
+  - id: test_level
+    type: enum
+    required: true
+    prompt: Select the target test level (functional, integration, regression, performance, security).
+    allowed_values:
+      - functional
+      - integration
+      - regression
+      - performance
+      - security
+    default: "functional"
+  - id: target_format
+    type: enum
+    required: false
+    prompt: Preferred output format?
+    allowed_values:
+      - markdown
+      - xray_json
+      - zephyr_csv
+    default: "markdown"
+intake:
+  confirm_before_run: true
+  allow_context_override: true
+  allow_skill_selection: true
+  allow_user_added_context: true
+context:
+  required_capabilities:
+    - requirements
+    - acceptance_criteria
+    - existing_test_assets
+  available_packs:
+    - pack_id: ctx_qe_standards
+      name: Enterprise QE Testing Standards & Templates
+      description: Gherkin conventions, boundary analysis criteria, and security test heuristics.
+    - pack_id: ctx_checkout_regression
+      name: Checkout Regression Test Matrix
+      description: Historical test suites and edge cases for cart and checkout flows.
+skills:
+  required:
+    - capability: test_case_generation
+      selection: deterministic
+      skill_id: skl_test_case_authoring
+  available_dynamic:
+    - capability: xray_payload_builder
+      skill_id: skl_xray_formatter
+      name: Jira Xray Test Suite Builder
+    - capability: security_fuzzing_advisor
+      skill_id: skl_security_fuzzing
+      name: OWASP & Security Boundary Generator
+model_policy_ref: gemini_standard_test_generation
+graph:
+  nodes:
+    - id: validate_inputs
+      type: validation
+      checkpoint: before_and_after
+    - id: retrieve_context
+      type: context_call
+      checkpoint: after
+    - id: generate_test_cases
+      type: model_call
+      checkpoint: after
+    - id: runtime_validation
+      type: human_validation
+      max_attempts: 3
+      resume_to: generate_test_cases
+    - id: prepare_writeback_payload
+      type: artifact
+      checkpoint: after
+    - id: approval_before_write
+      type: human_approval
+      required: true
+      reviewer: initiating_user
+      max_rework: 3
+      rework_resume_to: generate_test_cases
+    - id: write_to_xray
+      type: rest_connector_write
+      connector_ref: xray_rest
+      execute_only_after_approval: true
+  edges:
+    - from: validate_inputs
+      to: retrieve_context
+    - from: retrieve_context
+      to: generate_test_cases
+    - from: generate_test_cases
+      to: runtime_validation
+    - from: runtime_validation
+      to: prepare_writeback_payload
+    - from: prepare_writeback_payload
+      to: approval_before_write
+    - from: approval_before_write
+      to: write_to_xray
+outputs:
+  artifacts:
+    - test_case_markdown_suite
+    - xray_payload_json
+failure_policy:
+  dependency_retry: bounded
+  terminal_state_on_unrecoverable_error: failed
+
