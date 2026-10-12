@@ -1,0 +1,181 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20261012135135
+Username: IND\AN126165
+RunAs User: IND\AN126165
+Configuration Name: 
+Machine: MACYW42NLPC4271 (Microsoft Windows NT 10.0.26200.0)
+Host Application: powershell -Command $env:TEMP = $env:_TEMP; $env:TMP = $env:_TMP; $env:LOCALAPPDATA = $env:_LOCALAPPDATA; Get-ChildItem -Recurse -File src
+Process ID: 9880
+PSVersion: 5.1.26100.9444
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9444
+BuildVersion: 10.0.26100.9444
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+PS>$env:TEMP = $env:_TEMP; $env:TMP = $env:_TMP; $env:LOCALAPPDATA = $env:_LOCALAPPDATA; Get-ChildItem -Recurse -File src
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:55 PM            900 config.py
+-a----         9/30/2026  11:54 PM           2301 main.py
+-a----         10/1/2026   7:45 PM         131072 orchestrator_local.db
+-a----         9/30/2026  11:18 PM             32 __init__.py
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\api
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         10/1/2026  12:08 AM           4309 checkpoint_api.py
+-a----         9/30/2026  11:54 PM           2718 metrics_api.py
+-a----         9/30/2026  11:18 PM           2051 runs_api.py
+-a----         9/30/2026  11:18 PM           1001 stream_api.py
+-a----         9/30/2026  11:18 PM            281 __init__.py
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\api\__pycache__
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         10/1/2026  12:08 AM           6783 checkpoint_api.cpython-314.pyc
+-a----         9/30/2026  11:57 PM           4596 metrics_api.cpython-314.pyc
+-a----         9/30/2026  11:37 PM           3825 runs_api.cpython-314.pyc
+-a----         9/30/2026  11:43 PM           1611 stream_api.cpython-314.pyc
+-a----         9/30/2026  11:37 PM            423 __init__.cpython-314.pyc
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\models
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:18 PM            532 checkpoint_models.py
+-a----         9/30/2026  11:18 PM           3217 run_models.py
+-a----         9/30/2026  11:18 PM            501 __init__.py
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\models\__pycache__
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:37 PM           1836 checkpoint_models.cpython-314.pyc
+-a----         9/30/2026  11:37 PM           6583 run_models.cpython-314.pyc
+-a----         9/30/2026  11:37 PM            591 __init__.cpython-314.pyc
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\services
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:18 PM           1968 checkpoint_service.py
+-a----        10/12/2026   1:49 PM           4927 intent_resolver.py
+-a----        10/12/2026   1:49 PM           3614 mock_context_engine.py
+-a----        10/12/2026   1:49 PM           2994 mock_skills_engine.py
+-a----        10/12/2026   1:49 PM           5929 preflight_service.py
+-a----         9/30/2026  11:18 PM           2891 queue_service.py
+-a----         10/1/2026   1:05 AM          12038 run_lifecycle_service.py
+-a----        10/12/2026   1:50 PM           3203 snapshot_service.py
+-a----         10/1/2026   1:05 AM          14050 worker_client.py
+-a----        10/12/2026   1:49 PM           6758 workflow_registry.py
+-a----         9/30/2026  11:18 PM            509 __init__.py
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\services\__pycache__
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:43 PM           3901 checkpoint_service.cpython-314.pyc
+-a----         9/30/2026  11:43 PM           4765 queue_service.cpython-314.pyc
+-a----         10/1/2026   1:05 AM          17401 run_lifecycle_service.cpython-314.pyc
+-a----         10/1/2026   1:05 AM          13550 worker_client.cpython-314.pyc
+-a----         9/30/2026  11:37 PM            550 __init__.cpython-314.pyc
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\storage
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         10/1/2026  12:08 AM          27525 orchestrator_storage.py
+-a----        10/12/2026   1:50 PM           9494 schema_mysql.sql
+-a----         9/30/2026  11:18 PM             89 __init__.py
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\storage\__pycache__
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         10/1/2026  12:08 AM          36879 orchestrator_storage.cpython-314.pyc
+-a----         9/30/2026  11:37 PM            287 __init__.cpython-314.pyc
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\streaming
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:18 PM           2457 sse_broadcaster.py
+-a----         9/30/2026  11:18 PM            134 __init__.py
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\streaming\__pycache__
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:37 PM           4690 sse_broadcaster.cpython-314.pyc
+-a----         9/30/2026  11:37 PM            310 __init__.cpython-314.pyc
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\telemetry
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:54 PM           2920 logger.py
+-a----         10/6/2026   1:02 PM           3234 metrics.py
+-a----         9/30/2026  11:54 PM           4391 tracer.py
+-a----         9/30/2026  11:54 PM            386 __init__.py
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\telemetry\__pycache__
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:57 PM           6009 logger.cpython-314.pyc
+-a----         9/30/2026  11:43 PM           5803 metrics.cpython-314.pyc
+-a----         9/30/2026  11:57 PM           7906 tracer.cpython-314.pyc
+-a----         9/30/2026  11:57 PM            515 __init__.cpython-314.pyc
+
+
+    Directory: C:\Users\AN126165\Documents\Projects\Agentic-AI\platform-orchestrator\src\__pycache__
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/30/2026  11:57 PM           1968 config.cpython-314.pyc
+-a----         9/30/2026  11:57 PM           3166 main.cpython-314.pyc
+-a----         9/30/2026  11:37 PM            184 __init__.cpython-314.pyc
+
+
+PS>$global:?
+True
+**********************
+Windows PowerShell transcript end
+End time: 20261012135135
+**********************

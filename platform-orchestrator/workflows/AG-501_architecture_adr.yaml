@@ -1,0 +1,70 @@
+workflow_id: AG-501-architecture-adr
+version: 1.0.0
+status: published
+agent:
+  id: AG-501
+  name: Architecture Decision Record (ADR) & Blueprint Agent
+  description: Authors standard enterprise ADRs, architectural trade-off matrices, and C4 model diagrams.
+  domain: ENTERPRISE_ARCHITECTURE
+channels:
+  allowed:
+    - platform_ui
+    - confluence
+run_modes:
+  intake: conversational
+  execution: async_langgraph
+  handoff:
+    dispatch_when: required_inputs_confirmed_and_preflight_passed
+    worker_backed_conversation: true
+    next_turn_minimum_input: configured_required_inputs
+inputs:
+  - id: architectural_decision_topic
+    type: string
+    required: true
+    prompt: What is the architectural decision topic, trade-off, or system component to evaluate?
+  - id: proposed_options
+    type: string
+    required: false
+    prompt: List proposed options or candidate technologies to compare.
+context:
+  required_capabilities:
+    - enterprise_architecture_standards
+    - security_guardrails
+skills:
+  required:
+    - capability: adr_authoring
+      selection: deterministic
+      skill_id: skl_adr_generator
+model_policy_ref: gemini_2_5_pro_advanced_reasoning
+graph:
+  nodes:
+    - id: analyze_tradeoffs
+      type: model_call
+      checkpoint: after
+    - id: generate_adr
+      type: model_call
+      checkpoint: after
+    - id: approval_before_write
+      type: human_approval
+      required: true
+      reviewer: initiating_user
+      rework_resume_to: generate_adr
+    - id: write_to_confluence
+      type: rest_connector_write
+      connector_ref: confluence_rest
+      execute_only_after_approval: true
+  edges:
+    - from: analyze_tradeoffs
+      to: generate_adr
+    - from: generate_adr
+      to: approval_before_write
+    - from: approval_before_write
+      to: write_to_confluence
+outputs:
+  artifacts:
+    - adr_markdown
+    - architecture_diagram_mermaid
+failure_policy:
+  dependency_retry: bounded
+  terminal_state_on_unrecoverable_error: failed
+

@@ -1,0 +1,70 @@
+workflow_id: AG-301-code-generation
+version: 1.0.0
+status: published
+agent:
+  id: AG-301
+  name: Software Engineering & Code Generation Agent
+  description: Implements backend/frontend feature code, unit tests, and migration scripts adhering to enterprise engineering standards.
+  domain: SOFTWARE_ENGINEERING
+channels:
+  allowed:
+    - platform_ui
+    - gitlab
+run_modes:
+  intake: conversational
+  execution: async_langgraph
+  handoff:
+    dispatch_when: required_inputs_confirmed_and_preflight_passed
+    worker_backed_conversation: true
+    next_turn_minimum_input: configured_required_inputs
+inputs:
+  - id: story_id_or_spec
+    type: string
+    required: true
+    prompt: Provide the user story, technical specification, or Jira ticket key.
+  - id: target_repo
+    type: string
+    required: true
+    prompt: Target repository URL or namespace.
+context:
+  required_capabilities:
+    - codebase_context
+    - coding_guidelines
+skills:
+  required:
+    - capability: code_authoring
+      selection: deterministic
+      skill_id: skl_code_generator
+model_policy_ref: gemini_2_5_pro_advanced_reasoning
+graph:
+  nodes:
+    - id: inspect_repo
+      type: context_call
+      checkpoint: after
+    - id: generate_patch
+      type: model_call
+      checkpoint: after
+    - id: approval_before_write
+      type: human_approval
+      required: true
+      reviewer: initiating_user
+      rework_resume_to: generate_patch
+    - id: write_merge_request
+      type: rest_connector_write
+      connector_ref: gitlab_rest
+      execute_only_after_approval: true
+  edges:
+    - from: inspect_repo
+      to: generate_patch
+    - from: generate_patch
+      to: approval_before_write
+    - from: approval_before_write
+      to: write_merge_request
+outputs:
+  artifacts:
+    - git_diff_patch
+    - merge_request_summary
+failure_policy:
+  dependency_retry: bounded
+  terminal_state_on_unrecoverable_error: failed
+

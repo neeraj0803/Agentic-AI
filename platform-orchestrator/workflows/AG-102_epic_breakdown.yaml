@@ -1,0 +1,78 @@
+workflow_id: AG-102-epic-breakdown
+version: 1.0.0
+status: published
+agent:
+  id: AG-102
+  name: Epic & User Story Breakdown Agent
+  description: Deconstructs high-level PRDs and initiatives into well-structured Agile Epics, User Stories, and Acceptance Criteria ready for Jira.
+  domain: PRODUCT_MANAGEMENT
+channels:
+  allowed:
+    - platform_ui
+    - jira
+run_modes:
+  intake: conversational
+  execution: async_langgraph
+  handoff:
+    dispatch_when: required_inputs_confirmed_and_preflight_passed
+    worker_backed_conversation: true
+    next_turn_minimum_input: configured_required_inputs
+inputs:
+  - id: prd_content
+    type: string
+    required: true
+    prompt: Provide the approved PRD or feature summary for story breakdown.
+    validation:
+      kind: min_length
+      min_length: 20
+  - id: target_jira_project
+    type: string
+    required: false
+    prompt: Jira project key (e.g. APEX, PROD).
+    default: "APEX"
+intake:
+  confirm_before_run: true
+  allow_context_override: true
+  allow_skill_selection: true
+context:
+  required_capabilities:
+    - business_requirements
+    - team_velocity_history
+skills:
+  required:
+    - capability: story_splitter
+      selection: deterministic
+      skill_id: skl_user_story_splitter
+model_policy_ref: gemini_standard_product_agent
+graph:
+  nodes:
+    - id: analyze_scope
+      type: model_call
+      checkpoint: after
+    - id: split_stories
+      type: model_call
+      checkpoint: after
+    - id: approval_before_write
+      type: human_approval
+      required: true
+      reviewer: initiating_user
+      rework_resume_to: split_stories
+    - id: write_to_jira
+      type: rest_connector_write
+      connector_ref: jira_rest
+      execute_only_after_approval: true
+  edges:
+    - from: analyze_scope
+      to: split_stories
+    - from: split_stories
+      to: approval_before_write
+    - from: approval_before_write
+      to: write_to_jira
+outputs:
+  artifacts:
+    - user_stories_json
+    - agile_breakdown_markdown
+failure_policy:
+  dependency_retry: bounded
+  terminal_state_on_unrecoverable_error: failed
+
