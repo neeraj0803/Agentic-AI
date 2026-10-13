@@ -104,10 +104,14 @@ class TestCheckpointAndFeedback(unittest.TestCase):
         self.assertEqual(res.json().get("detail"), "got no workflow")
 
     def test_feedback_resumes_workflow(self):
-        # 1. Run dynamic workflow from Input.yaml to hit first checkpoint
+        # 1. Run dynamic workflow with checkpoint enabled on the first node
         input_yaml_path = ROOT_DIR / "Input.yaml"
         self.assertTrue(input_yaml_path.exists())
-        yaml_bytes = input_yaml_path.read_bytes()
+        import yaml
+        spec = yaml.safe_load(input_yaml_path.read_text(encoding="utf-8"))
+        if "graph" in spec and "nodes" in spec["graph"] and len(spec["graph"]["nodes"]) > 0:
+            spec["graph"]["nodes"][0]["checkpoint"] = True
+        yaml_bytes = yaml.dump(spec).encode("utf-8")
 
         run_res = self.client.post(
             "/workflow/run",

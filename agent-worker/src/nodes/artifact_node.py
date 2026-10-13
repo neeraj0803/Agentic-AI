@@ -74,12 +74,86 @@ def _generic_dict_to_markdown(data: Any, level: int = 1) -> str:
     return str(data)
 
 
+def _extract_artifact_topics(
+    node_def: dict[str, Any],
+    workflow_spec: dict[str, Any],
+    state: dict[str, Any],
+) -> list[str]:
+    """
+    Extracts the list of required artifact topics/components from:
+    1. node_def ('artifacts' or 'outputs.artifacts' or 'topics')
+    2. workflow_spec ('outputs.artifacts' or 'artifacts')
+    3. state ('outputs.artifacts' or 'workflow.outputs.artifacts')
+    Returns an empty list if not specified.
+    """
+    raw_artifacts = None
+
+    # 1. Check node_def
+    if isinstance(node_def.get("artifacts"), (list, dict)):
+        raw_artifacts = node_def.get("artifacts")
+    elif isinstance(node_def.get("topics"), list):
+        raw_artifacts = node_def.get("topics")
+    elif isinstance(node_def.get("outputs"), dict) and "artifacts" in node_def["outputs"]:
+        raw_artifacts = node_def["outputs"]["artifacts"]
+
+    # 2. Check workflow_spec
+    if not raw_artifacts and isinstance(workflow_spec, dict):
+        wf_outputs = workflow_spec.get("outputs")
+        if isinstance(wf_outputs, dict) and "artifacts" in wf_outputs:
+            raw_artifacts = wf_outputs["artifacts"]
+        elif isinstance(wf_outputs, list):
+            raw_artifacts = wf_outputs
+        elif isinstance(workflow_spec.get("artifacts"), list):
+            raw_artifacts = workflow_spec["artifacts"]
+
+    # 3. Check state
+    if not raw_artifacts and isinstance(state, dict):
+        st_outputs = state.get("outputs")
+        if isinstance(st_outputs, dict) and "artifacts" in st_outputs:
+            raw_artifacts = st_outputs["artifacts"]
+        elif isinstance(st_outputs, list):
+            raw_artifacts = st_outputs
+        elif isinstance(state.get("workflow"), dict):
+            wf = state["workflow"]
+            wf_outs = wf.get("outputs")
+            if isinstance(wf_outs, dict) and "artifacts" in wf_outs:
+                raw_artifacts = wf_outs["artifacts"]
+            elif isinstance(wf_outs, list):
+                raw_artifacts = wf_outs
+
+    if not raw_artifacts:
+        return []
+
+    topics: list[str] = []
+    if isinstance(raw_artifacts, list):
+        for item in raw_artifacts:
+            if isinstance(item, str) and item.strip():
+                topics.append(item.strip())
+            elif isinstance(item, dict):
+                label = (
+                    item.get("id")
+                    or item.get("name")
+                    or item.get("title")
+                    or item.get("topic")
+                    or item.get("key")
+                )
+                if label:
+                    topics.append(str(label).strip())
+    elif isinstance(raw_artifacts, dict):
+        for k in raw_artifacts.keys():
+            if str(k).strip():
+                topics.append(str(k).strip())
+
+    return topics
+
+
 def _generate_markdown_artifact_via_llm(
     upstream_data: dict[str, Any],
     metadata: dict[str, Any],
     custom_system_prompt: str | None = None,
     custom_user_prompt: str | None = None,
     config_path: Path | None = None,
+    artifact_topics: list[str] | None = None,
 ) -> tuple[str, str]:
     """Uses Azure OpenAI to transform upstream execution outputs into a polished Markdown document."""
     llm_cfg = load_llm_config(config_path)
@@ -90,29 +164,62 @@ def _generate_markdown_artifact_via_llm(
     deployment_name = api_details.get("deploymentName", "gpt-4o-mini-developers")
 
     if not api_key or not base_url:
-        return _build_fallback_markdown(upstream_data, metadata), "structural_serializer (no credentials)"
-
-    system_msg = (
-        custom_system_prompt
-        or "You are an expert Technical Documentation and QE Artifact Synthesis Agent.\n"
-        "Your task is to take the accumulated workflow data, test package details, and architectural signals, "
-        "and synthesize a comprehensive, clean, beautifully-structured Markdown (.md) document.\n\n"
-        "Guidelines:\n"
-        "- Generate standard Markdown only. Do not wrap the response in markdown code blocks unless requested.\n"
-        "- Include an Executive Summary, Acceptance Criteria Traceability, Complete Test Cases (with tables or step lists), "
-        "Regression Scope, and Risk Mitigations.\n"
-        "- Use clean formatting: headers (#, ##, ###), bullet lists, bold text, and markdown tables where appropriate."
-    )
+        return _build_fallback_markdown(upstream_data, metadata, artifact_topics), "structural_serializer (no credentials)"
 
     story_id = metadata.get("story_id", "Workflow-Artifact")
     data_summary = json.dumps(upstream_data, indent=2, default=str)
 
-    user_msg = (
-        custom_user_prompt
-        or f"Workflow Metadata:\n{json.dumps(metadata, indent=2)}\n\n"
-        f"Upstream Node Outputs and Context:\n{data_summary}\n\n"
-        f"Generate the comprehensive Markdown artifact for {story_id}:"
-    )
+    if artifact_topics:
+        topics_bullet_list = "\n".join(
+            f"- **{topic.replace('_', ' ').title()}** (`{topic}`)" for topic in artifact_topics
+        )
+        system_msg = (
+            custom_system_prompt
+            or "You are an expert Technical Documentation and QE Artifact Synthesis Agent.\n"
+            "Your task is to take the accumulated workflow data, test package details, and architectural signals, "
+            "and synthesize a comprehensive, clean, beautifully-structured Markdown (.md) document.\n\n"
+            "CRITICAL REQUIREMENT - Document Structure:\n"
+            "The artifact MUST strictly be organized into dedicated sections based on the following required topics specified in the workflow outputs:\n"
+            f"{topics_bullet_list}\n\n"
+            "Guidelines:\n"
+            "- Generate standard Markdown only. Do not wrap the response in markdown code blocks unless requested.\n"
+            "- Structure the document using primary Markdown headings (##) corresponding to each of the required topics listed above.\n"
+            "- Populate each section thoroughly based on the upstream node outputs, context, and drafted test data.\n"
+            "- Use clean formatting: headers (#, ##, ###), bullet lists, bold text, and markdown tables where appropriate."
+        )
+
+        topics_numbered = "\n".join(
+            f"{i+1}. ## {topic.replace('_', ' ').title()}" for i, topic in enumerate(artifact_topics)
+        )
+        user_msg = (
+            custom_user_prompt
+            or f"Workflow Metadata:\n{json.dumps(metadata, indent=2)}\n\n"
+            f"Upstream Node Outputs and Context:\n{data_summary}\n\n"
+            f"Generate the comprehensive Markdown artifact for {story_id}.\n"
+            f"The document structure MUST include the following specific sections corresponding to the required artifact topics:\n"
+            f"{topics_numbered}\n\n"
+            f"Synthesize the content for each section using the upstream node outputs, context, and drafted tests provided above."
+        )
+    else:
+        # Default prompt when no artifact topics are listed in outputs.artifacts
+        system_msg = (
+            custom_system_prompt
+            or "You are an expert Technical Documentation and QE Artifact Synthesis Agent.\n"
+            "Your task is to take the accumulated workflow data, test package details, and architectural signals, "
+            "and synthesize a comprehensive, clean, beautifully-structured Markdown (.md) document.\n\n"
+            "Guidelines:\n"
+            "- Generate standard Markdown only. Do not wrap the response in markdown code blocks unless requested.\n"
+            "- Include an Executive Summary, Acceptance Criteria Traceability, Complete Test Cases (with tables or step lists), "
+            "Regression Scope, and Risk Mitigations.\n"
+            "- Use clean formatting: headers (#, ##, ###), bullet lists, bold text, and markdown tables where appropriate."
+        )
+
+        user_msg = (
+            custom_user_prompt
+            or f"Workflow Metadata:\n{json.dumps(metadata, indent=2)}\n\n"
+            f"Upstream Node Outputs and Context:\n{data_summary}\n\n"
+            f"Generate the comprehensive Markdown artifact for {story_id}:"
+        )
 
     try:
         client = AzureOpenAI(
@@ -142,11 +249,15 @@ def _generate_markdown_artifact_via_llm(
         return cleaned, "azure_openai"
     except Exception as exc:
         logger.warning("LLM call for artifact creation failed or offline (%s). Using dynamic structural fallback.", exc)
-        return _build_fallback_markdown(upstream_data, metadata), f"fallback_error: {exc}"
+        return _build_fallback_markdown(upstream_data, metadata, artifact_topics), f"fallback_error: {exc}"
 
 
-def _build_fallback_markdown(upstream_data: dict[str, Any], metadata: dict[str, Any]) -> str:
-    """Builds a structured, human-readable Markdown document dynamically from any data."""
+def _build_fallback_markdown(
+    upstream_data: dict[str, Any],
+    metadata: dict[str, Any],
+    artifact_topics: list[str] | None = None,
+) -> str:
+    """Builds a structured, human-readable Markdown document dynamically, strictly adhering to artifact_topics if specified."""
     story_id = metadata.get("story_id", "Workflow-Artifact")
     workflow_id = metadata.get("workflow_id", "Agent-Workflow")
     generated_at = metadata.get("generated_at", datetime.datetime.now(datetime.timezone.utc).isoformat())
@@ -162,11 +273,54 @@ def _build_fallback_markdown(upstream_data: dict[str, Any], metadata: dict[str, 
         "",
     ]
 
-    for section_key, section_data in upstream_data.items():
-        title = section_key.replace("_", " ").title()
-        lines.append(f"## {title}\n")
-        lines.append(_generic_dict_to_markdown(section_data, level=3))
-        lines.append("")
+    if artifact_topics:
+        used_keys = set()
+        for topic in artifact_topics:
+            title = topic.replace("_", " ").title()
+            lines.append(f"## {title}\n")
+
+            matched_data = None
+            clean_topic = topic.lower().replace("-", "_")
+
+            if topic in upstream_data:
+                matched_data = upstream_data[topic]
+                used_keys.add(topic)
+            elif clean_topic in upstream_data:
+                matched_data = upstream_data[clean_topic]
+                used_keys.add(clean_topic)
+            else:
+                for k, v in upstream_data.items():
+                    k_clean = k.lower().replace("-", "_")
+                    if (
+                        clean_topic in k_clean
+                        or (clean_topic.startswith("reviewed_manual_test") and ("test" in k_clean or "drafted" in k_clean))
+                        or (clean_topic.startswith("coverage") and ("regression" in k_clean or "coverage" in k_clean))
+                        or (clean_topic.startswith("requirement_traceability") and ("traceability" in k_clean or "rtm" in k_clean or "story" in k_clean))
+                        or (clean_topic.startswith("assumptions") and ("assumption" in k_clean or "gap" in k_clean or "context" in k_clean))
+                        or (clean_topic.startswith("primary_xray") and ("xray" in k_clean or "test" in k_clean))
+                        or (clean_topic.startswith("excel_export") and ("excel" in k_clean or "test" in k_clean))
+                    ):
+                        matched_data = v
+                        used_keys.add(k)
+                        break
+
+            if matched_data:
+                lines.append(_generic_dict_to_markdown(matched_data, level=3))
+            else:
+                lines.append(f"Generated {title} based on workflow context and upstream node execution.")
+            lines.append("")
+
+        remaining = {k: v for k, v in upstream_data.items() if k not in used_keys}
+        if remaining:
+            lines.append("## Appendix - Additional Context\n")
+            lines.append(_generic_dict_to_markdown(remaining, level=3))
+            lines.append("")
+    else:
+        for section_key, section_data in upstream_data.items():
+            title = section_key.replace("_", " ").title()
+            lines.append(f"## {title}\n")
+            lines.append(_generic_dict_to_markdown(section_data, level=3))
+            lines.append("")
 
     return "\n".join(lines)
 
@@ -222,6 +376,9 @@ def create_artifact_node(
             "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         }
 
+        # Extract artifact topics if specified in workflow outputs or node_def
+        artifact_topics = _extract_artifact_topics(node_def, workflow_spec, state)
+
         # 3. Generate Markdown content
         engine_used = "dynamic_serializer"
         if use_llm:
@@ -231,9 +388,14 @@ def create_artifact_node(
                 custom_system_prompt=custom_system_prompt,
                 custom_user_prompt=custom_user_prompt,
                 config_path=custom_config_path,
+                artifact_topics=artifact_topics if artifact_topics else None,
             )
         else:
-            markdown_content = _build_fallback_markdown(upstream_data, metadata)
+            markdown_content = _build_fallback_markdown(
+                upstream_data=upstream_data,
+                metadata=metadata,
+                artifact_topics=artifact_topics if artifact_topics else None,
+            )
 
         # 4. Determine target file path (ensuring .md extension)
         if custom_filename_template:
@@ -270,6 +432,18 @@ def create_artifact_node(
             "metadata": metadata,
             "content": markdown_content,
         }
+        if artifact_topics:
+            artifact_record["topics"] = artifact_topics
+            for topic in artifact_topics:
+                t_entry = {
+                    "topic": topic,
+                    "title": topic.replace("_", " ").title(),
+                    "source_file": target_file.name,
+                }
+                if topic == "excel_export_file":
+                    t_entry["workbook_name"] = f"{story_id}_test_cases.xlsx"
+                artifact_record[topic] = t_entry
+
         state["artifacts"] = artifact_record
         state["artifact_path"] = str(target_file)
         state["artifact_file"] = target_file.name
@@ -284,7 +458,12 @@ def create_artifact_node(
             "artifact_path": str(target_file),
             "file_size_bytes": file_size,
             "engine": engine_used,
-            "summary": f"Created Markdown artifact in '{artifact_dir.name}/{target_file.name}' ({file_size} bytes via {engine_used}).",
+            "topics": artifact_topics if artifact_topics else None,
+            "summary": (
+                f"Created Markdown artifact in '{artifact_dir.name}/{target_file.name}' "
+                f"({file_size} bytes via {engine_used})"
+                + (f" with {len(artifact_topics)} topics." if artifact_topics else ".")
+            ),
         }
 
         if "nodes" not in state or not isinstance(state["nodes"], list):

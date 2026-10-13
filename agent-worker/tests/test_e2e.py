@@ -55,8 +55,9 @@ class TestWorkflowE2E(unittest.TestCase):
         self.assertIn("context_retriever", text)
         self.assertIn("node_complete", text)
 
-        # Since context_retriever has checkpoint: true, it should yield human_input_required
-        self.assertIn("human_input_required", text)
+        # Artifact generation and workflow completion
+        self.assertIn("prepare_test_package_artifacts", text)
+        self.assertIn("workflow_complete", text)
 
     def test_workflow_conversation_and_session(self):
         # Create a mock session file

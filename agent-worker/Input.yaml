@@ -84,12 +84,12 @@ context:
 
 skills:
   required:
-    - skill_id: epic-story-decomposition
-      capability: epic_story_decomposition
+    - skill_id: feature-epic-decomposition
+      capability: feature-epic-decomposition
       domain: Macy's Ways of Working (MWoW)
       selection: deterministic
       version: "1.1.0"
-      skill_file: skills/epic-story-decomposition.skill
+      skill_file: skills/feature-epic-decomposition.skill
 
 model_policy_ref: azure_standard_test_generation
 
@@ -103,12 +103,17 @@ graph:
     # 2. Apply Skill: Epic to Story Decomposition
     - id: skill_retriever
       type: skill_call
-      skill_ref: epic-story-decomposition
+      skill_ref: feature-epic-decomposition
       checkpoint: false
 
     # 3. Draft Test Cases, Negative Scenarios, Regression Scope & RTM Matrix
     - id: test_cases_generation
       type: llm_call
+      checkpoint: false
+    
+    - id: skill_retriever
+      type: skill_call
+      skill_ref: feature-epic-decomposition
       checkpoint: false
 
     # 4. Format Output Artifacts (Context Brief, RTM Matrix, Test Cases, Export JSON/Excel)

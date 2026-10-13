@@ -9,6 +9,14 @@ backend/workspace
 new-langgraph-backend/.venv
 new-langgraph-backend/venv
 
+
+agent-worker/.venv
+agent-worker/venv
+agent-worker/tests
+agent-worker/temp dir
+agent-worker/src/__pycache__
+agent-worker/src/*/__pycache__
+
 # Antigravity Rules and Customizations (.md and config)
 AGENTS.md
 **/AGENTS.md
