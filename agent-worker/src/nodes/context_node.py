@@ -25,8 +25,17 @@ def create_context_node(
         state["status"] = "running"
         state["current_node"] = node_id
 
-        # 1. Resolve context: from state if pre-populated, else load from file
-        retrieved_context = state.get(context_key)
+        # 1. Resolve context: from state if pre-populated, else check node_def/workflow context, else load from file
+        retrieved_context = (
+            state.get(context_key)
+            or state.get("input_context")
+            or state.get("context_data")
+            or node_def.get("context")
+            or node_def.get("data")
+            or node_def.get("raw_data")
+            or state.get("context", {}).get("raw_data")
+            or state.get("context", {}).get("content")
+        )
         source_description = "state"
 
         if not retrieved_context:
@@ -34,7 +43,11 @@ def create_context_node(
             if target_file.exists():
                 try:
                     with target_file.open("r", encoding="utf-8") as f:
-                        retrieved_context = json.load(f)
+                        if target_file.suffix.lower() in [".yaml", ".yml"]:
+                            import yaml
+                            retrieved_context = yaml.safe_load(f)
+                        else:
+                            retrieved_context = json.load(f)
                     source_description = str(target_file.name)
                 except Exception as exc:
                     logger.error("Failed to read context file %s: %s", target_file, exc)
@@ -50,39 +63,30 @@ def create_context_node(
         state["input_context"] = retrieved_context
         state["context_data"] = retrieved_context
 
-        # 3. Determine active inputs for downstream consumers
-        active_inputs: dict[str, Any] = {}
-        if isinstance(retrieved_context, list) and retrieved_context:
-            if target_story_id:
-                # Find matching story
-                matching = next(
-                    (item for item in retrieved_context if isinstance(item, dict) and item.get("jira_story_or_epic_id") == target_story_id),
-                    None,
-                )
-                if matching:
-                    active_inputs = copy.deepcopy(matching)
-                else:
-                    active_inputs = copy.deepcopy(retrieved_context[0])
-                    active_inputs["jira_story_or_epic_id"] = target_story_id
-            elif 0 <= selected_index < len(retrieved_context):
-                active_inputs = copy.deepcopy(retrieved_context[selected_index])
-            else:
-                active_inputs = copy.deepcopy(retrieved_context[0])
-        elif isinstance(retrieved_context, dict):
-            active_inputs = copy.deepcopy(retrieved_context)
-            if target_story_id:
-                active_inputs["jira_story_or_epic_id"] = target_story_id
+        # 3. Pass full retrieved context directly to validated_inputs and downstream consumers
+        state["validated_inputs"] = retrieved_context
 
-        state["validated_inputs"] = active_inputs
+        # Determine reference identifier or summary label dynamically
+        reference_id = (
+            node_def.get("story_id")
+            or node_def.get("reference_id")
+            or state.get("workflow_id")
+            or state.get("conversation_id")
+            or "context_batch"
+        )
+
+        total_items_count = len(retrieved_context) if isinstance(retrieved_context, list) else (1 if retrieved_context else 0)
 
         output: dict[str, Any] = {
             "status": "completed",
             "node_id": node_id,
             "source": source_description,
-            "total_items": len(retrieved_context) if isinstance(retrieved_context, list) else (1 if retrieved_context else 0),
-            "active_story_id": active_inputs.get("jira_story_or_epic_id", "N/A"),
+            "total_items": total_items_count,
+            "active_reference_id": str(reference_id),
             "context": retrieved_context,
         }
+        # Backward compatibility for listeners expecting active_story_id
+        output["active_story_id"] = str(reference_id)
 
         state[f"{node_id}_output"] = output
 

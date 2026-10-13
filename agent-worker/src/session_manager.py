@@ -38,11 +38,11 @@ def capture_workflow_snapshot(
     snapshot = copy.deepcopy(state)
 
     # Core Identifiers
-    conversation_id = snapshot.get("conversation_id") or "QE-201-draft-test-cases-from-jira-conversation"
+    conversation_id = snapshot.get("conversation_id")
     session_id = snapshot.get("workflow_session_id") or str(uuid.uuid4())
     snapshot["conversation_id"] = conversation_id
     snapshot["workflow_session_id"] = session_id
-    snapshot.setdefault("workflow_id", "QE-201-draft-test-cases-from-jira")
+    snapshot.setdefault("workflow_id")
     snapshot.setdefault("version", "1.0.0")
     snapshot.setdefault("type", "Agent")
 
@@ -74,7 +74,6 @@ def capture_workflow_snapshot(
     snapshot.setdefault("skills", {})
     snapshot.setdefault("context_brief", {})
     snapshot.setdefault("model_policy_ref", "azure_standard_test_generation")
-    snapshot.setdefault("drafted_tests", {})
     snapshot.setdefault("artifacts", {})
     snapshot.setdefault("rework_count", 0)
     snapshot.setdefault("rework_feedback", "")

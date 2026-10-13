@@ -22,33 +22,52 @@ def load_llm_config(config_path: Path | None = None) -> dict[str, Any]:
     return {}
 
 
-def _build_default_prompts(state: dict[str, Any]) -> tuple[str, str]:
-    """Generates default system message and user prompt from current state."""
-    system_message = (
-        "You are an expert QE Automation and Manual Test Case Engineer.\n"
-        "Your task is to draft detailed manual test cases, boundary scenarios, negative tests, "
-        "regression coverage, and a Requirement Traceability Matrix (RTM) based on the provided context.\n"
-        "You must respond ONLY with a valid JSON object containing:\n"
-        "- manual_test_cases: array of test objects (test_id, title, type, priority, pre_conditions, steps, expected_result, ac_covered)\n"
-        "- requirement_traceability_matrix: array of mappings (ac_id, test_case_ids, coverage_notes)\n"
-        "- regression_scope: object detailing modules affected and critical regression paths\n"
-        "- assumptions_and_gaps: array of surfaced ambiguities or assumptions"
-    )
+def _build_default_prompts(
+    state: dict[str, Any],
+    node_def: dict[str, Any] | None = None,
+    workflow_spec: dict[str, Any] | None = None,
+) -> tuple[str, str]:
+    """Generates default system message and user prompt dynamically based on node definition and context."""
+    node_id = (node_def or {}).get("id") or (node_def or {}).get("node_id") or "llm_node"
+    node_name = (node_def or {}).get("name") or node_id.replace("_", " ").title()
+    node_desc = (node_def or {}).get("description")
+    wf_agent = (workflow_spec or {}).get("agent", {}) if isinstance(workflow_spec, dict) else {}
+    agent_desc = wf_agent.get("description") or wf_agent.get("name") or "Workflow Intelligent Assistant"
+
+    # If specifically a test generation node or has test in name, provide test guidance, otherwise generic task guidance
+    if "test" in node_id.lower() or "test" in str(node_name).lower():
+        system_message = (
+            f"You are an expert AI Agent performing the '{node_name}' task for: {agent_desc}.\n"
+            "Your task is to analyze the provided input context and produce a structured, thorough output.\n"
+            "You must respond with a valid JSON object."
+        )
+    else:
+        system_message = (
+            f"You are an expert AI Agent performing the '{node_name}' task.\n"
+            f"Context: {agent_desc}.\n"
+            f"Objective: {node_desc or f'Process the accumulated inputs and execute the {node_name} operation.'}\n"
+            "You must respond with a valid JSON object containing your structured findings, fields, and results."
+        )
 
     context_payload = state.get("input_context") or state.get("validated_inputs") or state.get("context_data") or {}
-    user_stories = state.get("user_stories") or []
-    context_brief = state.get("context_brief") or ""
     rework_feedback = state.get("rework_feedback", "")
-    rework_section = f"\nQE Reviewer Rework Feedback to Address:\n{rework_feedback}\n" if rework_feedback else ""
-    stories_section = f"\nDecomposed User Stories / MWoW Criteria:\n{json.dumps(user_stories, indent=2, default=str)}\n" if user_stories else ""
-    brief_section = f"\nSkill Analysis & Context Brief:\n{context_brief}\n" if context_brief else ""
+    rework_section = f"\nReviewer Feedback to Address:\n{rework_feedback}\n" if rework_feedback else ""
+
+    # Include any upstream node outputs
+    upstream_summaries = []
+    for node in state.get("nodes", []):
+        nid = node.get("node_id") or node.get("id")
+        if nid and nid != node_id and node.get("output") is not None:
+            upstream_summaries.append(f"Output of [{nid}]:\n{json.dumps(node['output'], indent=2, default=str)}")
+
+    upstream_section = ("\n\nUpstream Node Results:\n" + "\n".join(upstream_summaries)) if upstream_summaries else ""
 
     user_prompt = (
-        f"Input Context:\n{json.dumps(context_payload, indent=2, default=str)}\n"
-        f"{stories_section}"
-        f"{brief_section}"
-        f"{rework_section}\n"
-        "Draft the complete test package and return the JSON response:"
+        f"Task: {node_name}\n"
+        f"Input Context:\n{json.dumps(context_payload, indent=2, default=str)}"
+        f"{upstream_section}"
+        f"{rework_section}\n\n"
+        f"Perform the analysis and return the complete results as a JSON object."
     )
 
     return system_message, user_prompt
@@ -77,10 +96,26 @@ def _format_prompt_template(template: str, state: dict[str, Any]) -> str:
 
 def _fallback_test_cases(state: dict[str, Any]) -> dict[str, Any]:
     """Provides fallback test cases if LLM is offline or blocked."""
-    validated = state.get("validated_inputs", {})
-    story_id = validated.get("jira_story_or_epic_id", "CHK-100")
-    scope = validated.get("test_scope_and_type", "functional_and_negative")
-    target_env = validated.get("target_application_and_env", "Staging")
+    validated = state.get("validated_inputs")
+    input_ctx = state.get("input_context")
+
+    def _resolve_field(field_names: list[str], default: str = "") -> str:
+        for src in [validated, input_ctx]:
+            if isinstance(src, dict):
+                for fn in field_names:
+                    if src.get(fn):
+                        return str(src[fn])
+            elif isinstance(src, list) and src:
+                for item in src:
+                    if isinstance(item, dict):
+                        for fn in field_names:
+                            if item.get(fn):
+                                return str(item[fn])
+        return default
+
+    story_id = _resolve_field(["jira_story_or_epic_id", "id", "key", "story_id", "reference_id"], "CHK-100")
+    scope = _resolve_field(["test_scope_and_type", "test_scope", "scope"], "functional_and_negative")
+    target_env = _resolve_field(["target_application_and_env", "target_env", "env"], "Staging")
 
     return {
         "story_id": story_id,
@@ -201,7 +236,7 @@ def create_llm_node(
         state["current_node"] = node_id
 
         # 1. Build dynamic system message and user prompt
-        default_sys, default_usr = _build_default_prompts(state)
+        default_sys, default_usr = _build_default_prompts(state, node_def, workflow_spec)
         system_msg = custom_system if custom_system else default_sys
         user_msg = _format_prompt_template(custom_user, state) if custom_user else default_usr
 
@@ -234,7 +269,6 @@ def create_llm_node(
                     api_version=api_version,
                     azure_endpoint=base_url,
                 )
-
                 call_kwargs: dict[str, Any] = {
                     "model": deployment_name,
                     "messages": [
@@ -268,7 +302,8 @@ def create_llm_node(
 
         # 4. Save to state dynamically
         state[output_key] = llm_result
-        state["drafted_tests"] = llm_result
+        if output_key == "drafted_tests" or node_id == "test_cases_generation":
+            state["drafted_tests"] = llm_result
         state[f"{node_id}_output"] = llm_result
 
         node_output = {

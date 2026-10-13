@@ -2,96 +2,32 @@ conversation_id: QE-201-draft-test-cases-from-jira-conversation
 workflow_id: QE-201-draft-test-cases-from-jira
 version: 1.0.0
 status: published
+
 agent:
   id: QE-201
   name: QE Manual Test Case and Regression Drafter
   description: >-
-    Retrieves application-specific context and signals, synthesizes a context brief,
-    drafts manual test cases with negative scenarios and regression coverage, and submits
-    the draft for QE tester/lead review before publishing to Xray or Excel.
-
-actors:
-  initiator: qe_tester
-  approver: qe_lead
-
-channels:
-  allowed:
-    - jira
-    - platform_ui
-
-run_modes:
-  intake: conversational
-  execution: async_langgraph
-  handoff:
-    dispatch_when: required_inputs_confirmed_and_preflight_passed
-    worker_backed_conversation: true
-    next_turn_minimum_input: configured_required_inputs
+    Retrieves context, breaks down epics and user stories, drafts comprehensive test cases, 
+    and synthesizes a technical review artifact.
 
 inputs:
   - id: jira_story_or_epic_id
-    type: source_reference
     required: true
-    prompt: Provide the Jira Story, linked stories, or Epic ID (e.g., CHK-100).
-    validation:
-      kind: reference_or_text
-
-  - id: acceptance_criteria
-    type: string
-    required: false
-    prompt: Provide any additional or overridden acceptance criteria (if not fully defined in Jira).
-    validation:
-      kind: text
-
   - id: test_scope_and_type
-    type: enum
     required: true
-    prompt: Which test scope and types should be prioritized?
     allowed_values:
       - functional_and_negative
       - full_impact_and_regression
       - smoke_and_sanity
       - boundary_and_nfr
-
   - id: target_application_and_env
-    type: string
     required: false
-    prompt: Specify the target application service and environment (e.g., Checkout Service / Staging).
-    default: auto_resolve_from_jira
-
   - id: output_preference
-    type: enum
     required: true
-    prompt: Select your preferred output channel/format.
     allowed_values:
       - xray_record
       - excel_export
       - xray_and_excel
-
-intake:
-  confirm_before_run: true
-  allow_context_override: true
-  allow_skill_selection: true
-  allow_user_added_context: true
-
-context:
-  required_capabilities:
-    - linked_jira_and_prd_content
-    - application_modules_apis_and_data_flows
-    - xray_and_excel_tests
-    - regression_suites_and_defects
-    - similar_past_changes_and_production_defects
-    - qe_standards_and_nfrs
-
-skills:
-  required:
-    - skill_id: feature-epic-decomposition
-      capability: feature-epic-decomposition
-      domain: Macy's Ways of Working (MWoW)
-      selection: deterministic
-      version: "1.1.0"
-      skill_file: skills/feature-epic-decomposition.skill
-
-model_policy_ref: azure_standard_test_generation
 
 graph:
   nodes:
@@ -111,7 +47,7 @@ graph:
       type: llm_call
       checkpoint: false
     
-    - id: skill_retriever
+    - id: skill_retriever_2
       type: skill_call
       skill_ref: feature-epic-decomposition
       checkpoint: false
@@ -126,17 +62,46 @@ graph:
     - from: skill_retriever
       to: test_cases_generation
     - from: test_cases_generation
+      to: skill_retriever_2
+    - from: skill_retriever_2
       to: prepare_test_package_artifacts
 
 outputs:
-  artifacts:
-    - reviewed_manual_test_cases       # Steps, test data, expected results, positive/negative
-    - coverage_and_regression_matrix   # Suggested regression scope to prevent gaps
-    - requirement_traceability_matrix  # Bi-directional mapping between ACs and Test IDs
-    - assumptions_and_gaps             # Ambiguities and missing information surfaced
-    - primary_xray_record              # Xray JSON writeback payload
-    - excel_export_file                # Optional test case workbook (.xlsx)
+  templates:
+    - manual_test_cases_template:
+        - test_id
+        - test_title
+        - test_type                    # functional, negative, edge/egression
+        - linked_acceptance_criteria
+        - preconditions_and_test_data
+        - step_action
+        - step_expected_result
+        - qe_approval_status
 
-failure_policy:
-  dependency_retry: bounded
-  terminal_state_on_unrecoverable_error: failed
+    - coverage_and_regression_matrix_template:
+        - impacted_modules_and_apis
+        - suggested_regression_suite_ids
+        - regression_test_case_id
+        - impact_and_dependency_rationale
+
+    - requirement_traceability_matrix_template:
+        - jira_id_or_epic
+        - acceptance_criteria_id
+        - mapped_test_case_ids
+        - coverage_status
+
+    - assumptions_and_gaps_template:
+        - missing_requirements
+        - data_and_environment_dependencies
+        - open_questions_for_po_or_dev
+
+    - primary_xray_record_template:
+        - jira_project_key
+        - test_issue_type
+        - manual_steps_data_results
+
+    - excel_export_file_template:
+        - test_cases_sheet
+        - rtm_traceability_sheet
+        - regression_scope_sheet
+        - assumptions_sheet

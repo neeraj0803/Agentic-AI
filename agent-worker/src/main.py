@@ -57,7 +57,5 @@ async def health():
     return {
         "status": "UP",
         "orchestrator": "ok",
-        "agent": "QE-201-draft-test-cases-from-jira",
-        "version": "1.0.0",
         "framework": "LangGraph + FastAPI SSE",
     }

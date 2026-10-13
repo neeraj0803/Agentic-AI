@@ -149,30 +149,6 @@ class TestWorkflowOrchestrator(unittest.TestCase):
         self.assertEqual(res2.status_code, 200)
         self.assertIn("workflow_complete", res2.text)
 
-    @patch("src.nodes.conversation_node.call_llm", return_value="Workflow summary response")
-    def test_workflow_conversation(self, mock_llm):
-        session_id = "test-session-conv"
-        session_file = self.session_dir / f"{session_id}-Agent.json"
-        with session_file.open("w", encoding="utf-8") as f:
-            json.dump({
-                "workflow_session_id": session_id,
-                "type": "Agent",
-                "status": "completed",
-                "nodes": [{"node_id": "n1", "output": "Done"}]
-            }, f)
-
-        res = self.client.post(
-            "/workflow/conversation",
-            json={
-                "workflow_session_id": session_id,
-                "user_query": "What is the status?"
-            }
-        )
-        self.assertEqual(res.status_code, 200)
-        data = res.json()
-        self.assertEqual(data["workflow_session_id"], session_id)
-        self.assertEqual(data["answer"], "Workflow summary response")
-
 
 if __name__ == "__main__":
     unittest.main()

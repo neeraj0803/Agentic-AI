@@ -30,9 +30,18 @@ def create_connector_node(
                         break
                 return state
 
-        validated_inputs = state.get("validated_inputs", {})
-        story_id = validated_inputs.get("jira_story_or_epic_id", "CHK-100")
-        output_pref = validated_inputs.get("output_preference", "xray_record")
+        validated_inputs = state.get("validated_inputs")
+        def _resolve_val(key: str, default: str) -> str:
+            if isinstance(validated_inputs, dict):
+                return str(validated_inputs.get(key, default))
+            elif isinstance(validated_inputs, list) and validated_inputs:
+                for it in validated_inputs:
+                    if isinstance(it, dict) and it.get(key):
+                        return str(it[key])
+            return default
+
+        story_id = _resolve_val("jira_story_or_epic_id", state.get("workflow_id", "CHK-100"))
+        output_pref = _resolve_val("output_preference", "xray_record")
         artifacts = state.get("artifacts", {})
         test_cases = state.get("drafted_tests", {}).get("manual_test_cases", [])
 

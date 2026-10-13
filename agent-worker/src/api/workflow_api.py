@@ -21,7 +21,6 @@ from ..graph.workflow_orchestrator import (
     sse,
     stream_workflow,
 )
-from ..nodes.conversation_node import conversation_node
 from ..session_manager import (
     init_workflow_session,
     load_workflow_session,
@@ -38,9 +37,9 @@ router = APIRouter(tags=["Dynamic Workflow Orchestrator"])
 class WorkflowPayload(BaseModel):
     model_config = ConfigDict(extra="allow")
 
-    conversation_id: str = "QE-201-draft-test-cases-from-jira-conversation"
+    conversation_id: str = "default_conversation"
     workflow_session_id: str | None = None
-    workflow_id: str = "QE-201-draft-test-cases-from-jira"
+    workflow_id: str = "default_workflow"
     version: str = "1.0.0"
     status: str = "not_started"
     current_node: str = ""
@@ -72,11 +71,6 @@ class HumanDecisionRequest(BaseModel):
     reviewed_by: str | None = None
 
 
-class ConversationRequest(BaseModel):
-    workflow_session_id: str = Field(min_length=1)
-    user_query: str = Field(min_length=1)
-
-
 @router.post("/workflow/run")
 async def run_workflow(request: Request):
     body_bytes = await request.body()
@@ -96,6 +90,13 @@ async def run_workflow(request: Request):
     if not raw_nodes:
         raise HTTPException(status_code=400, detail="got no workflow")
 
+    for idx, node in enumerate(raw_nodes):
+        if not isinstance(node, dict) or not (node.get("id") or node.get("node_id")):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Node at index {idx} is missing required 'node_id' or 'id'.",
+            )
+
     try:
         workflow_payload = WorkflowPayload.model_validate(workflow_data)
     except ValidationError as exc:
@@ -114,7 +115,7 @@ async def run_workflow(request: Request):
         interrupt_after=checkpoint_nodes,
     )
 
-    conv_id = workflow.get("conversation_id", "QE-201-draft-test-cases-from-jira-conversation")
+    conv_id = workflow.get("conversation_id")
     sess_id = workflow.get("workflow_session_id")
     config = {
         "configurable": {
@@ -279,21 +280,6 @@ def submit_human_decision(request: HumanDecisionRequest):
     )
 
 
-@router.post("/workflow/conversation")
-def workflow_conversation(request: ConversationRequest):
-    try:
-        answer = conversation_node(request.workflow_session_id, request.user_query)
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    return {
-        "workflow_session_id": request.workflow_session_id,
-        "answer": answer,
-    }
-
-
 @router.get("/workflow/session/{identifier}")
 def get_workflow_session(identifier: str):
     try:
@@ -311,7 +297,5 @@ async def health():
     return {
         "status": "UP",
         "orchestrator": "ok",
-        "agent": "QE-201-draft-test-cases-from-jira",
-        "version": "1.0.0",
         "framework": "LangGraph + FastAPI SSE",
     }

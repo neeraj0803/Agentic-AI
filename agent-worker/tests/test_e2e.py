@@ -19,7 +19,7 @@ class TestWorkflowE2E(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn(data.get("status"), ["ok", "UP"])
-        self.assertEqual(data.get("agent"), "QE-201-draft-test-cases-from-jira")
+        self.assertEqual(data.get("orchestrator"), "ok")
 
     def test_root(self):
         response = self.client.get("/")
@@ -59,26 +59,18 @@ class TestWorkflowE2E(unittest.TestCase):
         self.assertIn("prepare_test_package_artifacts", text)
         self.assertIn("workflow_complete", text)
 
-    def test_workflow_conversation_and_session(self):
+    def test_workflow_session_and_missing_node_id_error(self):
         # Create a mock session file
-        session_id = "test-session-conv-e2e"
+        session_id = "test-session-e2e-valid"
         conv_id = "test-conv-e2e"
         mock_state = {
             "conversation_id": conv_id,
             "workflow_session_id": session_id,
-            "workflow_id": "QE-201-draft-test-cases-from-jira",
+            "workflow_id": "test-workflow",
             "status": "completed",
-            "validated_inputs": {"jira_story_or_epic_id": "AIDLC-102"},
             "nodes": [
-                {"id": "context_retriever", "output": {"issue_key": "AIDLC-102"}},
-                {"id": "skill_retriever", "output": {"skills": ["context_brief_generator"]}},
+                {"id": "node_1", "output": {"data": "ok"}},
             ],
-            "context_brief": {"story_key": "AIDLC-102", "risk_factors": ["Security"]},
-            "drafted_tests": {
-                "manual_test_cases": [
-                    {"test_id": "TC-01", "title": "Test Auth", "type": "Functional", "priority": "High"}
-                ]
-            },
         }
         save_session_file(mock_state)
 
@@ -88,19 +80,22 @@ class TestWorkflowE2E(unittest.TestCase):
         sess_data = get_res.json()
         self.assertEqual(sess_data["workflow_session_id"], session_id)
 
-        # POST conversation
-        conv_res = self.client.post(
-            "/workflow/conversation",
-            json={
-                "workflow_session_id": session_id,
-                "user_query": "Please show test cases",
-            },
+        # Missing node_id test
+        invalid_yaml = """
+conversation_id: "test-conv-err"
+workflow_id: "test-wf-err"
+graph:
+  nodes:
+    - name: "Node without id"
+      type: "passthrough"
+"""
+        err_res = self.client.post(
+            "/workflow/run",
+            content=invalid_yaml.encode("utf-8"),
+            headers={"Content-Type": "application/x-yaml"},
         )
-        self.assertEqual(conv_res.status_code, 200)
-        conv_data = conv_res.json()
-        self.assertEqual(conv_data["workflow_session_id"], session_id)
-        self.assertIn("TC-01", conv_data["answer"])
-
+        self.assertEqual(err_res.status_code, 400)
+        self.assertIn("missing required 'node_id' or 'id'", err_res.json().get("detail", ""))
 
 
 if __name__ == "__main__":

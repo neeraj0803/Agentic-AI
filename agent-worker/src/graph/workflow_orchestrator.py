@@ -48,10 +48,10 @@ def normalize_workflow_state(workflow: dict[str, Any]) -> WorkflowState:
         nodes_state.append(node_copy)
 
     return {
-        "conversation_id": workflow.get("conversation_id", "QE-201-draft-test-cases-from-jira-conversation"),
+        "conversation_id": workflow.get("conversation_id"),
         "workflow_session_id": workflow.get("workflow_session_id"),
-        "workflow_id": workflow.get("workflow_id", "QE-201-draft-test-cases-from-jira"),
-        "version": workflow.get("version", "1.0.0"),
+        "workflow_id": workflow.get("workflow_id"),
+        "version": workflow.get("version"),
         "type": "Agent",
         "status": workflow.get("status", "not_started"),
         "current_node": workflow.get("current_node", ""),
@@ -447,19 +447,12 @@ def stream_workflow(
                         node_output = result[f"{node_id}_output"]
                     elif node_id in result:
                         node_output = result[node_id]
-                    elif node_id == "context_retriever":
-                        node_output = {
-                            "status": "completed",
-                            "node_id": node_id,
-                            "active_story_id": result.get("validated_inputs", {}).get("jira_story_or_epic_id", "N/A"),
-                            "context": result.get("input_context") or result.get("context_data"),
-                        }
-                    elif node_id == "skill_retriever" and "context_brief" in result:
-                        node_output = result.get("context_brief")
-                    elif node_id == "test_cases_generation" and "drafted_tests" in result:
-                        node_output = result.get("drafted_tests")
-                    elif node_id == "prepare_test_package_artifacts" and "artifacts" in result:
+                    elif "artifacts" in result and ("artifact" in node_id or "package" in node_id):
                         node_output = result.get("artifacts")
+                    elif "drafted_tests" in result and "test" in node_id:
+                        node_output = result.get("drafted_tests")
+                    elif "output" in result:
+                        node_output = result.get("output")
 
                 yield sse("node_complete", {"node_id": node_id, "output": node_output})
                 last_completed_node = node_id

@@ -16,6 +16,9 @@ agent-worker/tests
 agent-worker/temp dir
 agent-worker/src/__pycache__
 agent-worker/src/*/__pycache__
+agent-worker/artifacts
+agent-worker/Mock-Input
+agent-worker/skills
 
 # Antigravity Rules and Customizations (.md and config)
 AGENTS.md

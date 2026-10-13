@@ -220,22 +220,28 @@ class SkillPackage:
     def execute(self, state: dict[str, Any], parameters: dict[str, Any] | None = None) -> dict[str, Any]:
         """Executes the skill against the given state, attempting LLM inference with deterministic fallback."""
         params = parameters or {}
-        validated = state.get("validated_inputs") or {}
-        input_ctx = state.get("input_context") or {}
-        story_id = (
-            validated.get("jira_story_or_epic_id")
-            or (input_ctx[0].get("jira_story_or_epic_id") if isinstance(input_ctx, list) and input_ctx else None)
-            or (input_ctx.get("jira_story_or_epic_id") if isinstance(input_ctx, dict) else None)
-            or "EPIC-100"
-        )
-        acceptance_criteria = (
-            validated.get("acceptance_criteria")
-            or (input_ctx[0].get("acceptance_criteria") if isinstance(input_ctx, list) and input_ctx else "")
-            or (input_ctx.get("acceptance_criteria") if isinstance(input_ctx, dict) else "")
-            or ""
-        )
-        test_scope = validated.get("test_scope_and_type", "functional_and_negative")
-        target_env = validated.get("target_application_and_env", "Staging")
+        validated = state.get("validated_inputs")
+        input_ctx = state.get("input_context")
+
+        def _resolve_field(field_names: list[str], default: str = "") -> str:
+            candidates = [validated, input_ctx]
+            for src in candidates:
+                if isinstance(src, dict):
+                    for fn in field_names:
+                        if src.get(fn):
+                            return str(src[fn])
+                elif isinstance(src, list) and src:
+                    for item in src:
+                        if isinstance(item, dict):
+                            for fn in field_names:
+                                if item.get(fn):
+                                    return str(item[fn])
+            return default
+
+        story_id = _resolve_field(["jira_story_or_epic_id", "id", "key", "story_id", "reference_id"], "EPIC-100")
+        acceptance_criteria = _resolve_field(["acceptance_criteria", "criteria", "requirements"], "")
+        test_scope = _resolve_field(["test_scope_and_type", "test_scope", "scope"], "functional_and_negative")
+        target_env = _resolve_field(["target_application_and_env", "target_env", "env"], "Staging")
 
         # 1. Attempt LLM execution if Azure OpenAI configuration exists
         llm_cfg = load_llm_config()

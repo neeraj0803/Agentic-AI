@@ -29,12 +29,20 @@ def _collect_upstream_data(state: dict[str, Any], current_node_id: str) -> dict[
 
     for node in state.get("nodes", []):
         nid = node.get("node_id") or node.get("id")
-        if nid and nid != current_node_id and node.get("output"):
+        if nid and nid != current_node_id and node.get("output") is not None:
             collected[f"{nid}_output"] = node.get("output")
 
-    for key in ["drafted_tests", "context_brief", "skills", "validated_inputs", "input_context"]:
+    # Collect any dynamic state context keys
+    for key in [
+        "input_context",
+        "context_data",
+        "validated_inputs",
+        "context_brief",
+        "drafted_tests",
+        "skills",
+    ]:
         val = state.get(key)
-        if val:
+        if val is not None and key not in collected:
             collected[key] = val
 
     for k, v in state.items():
@@ -74,77 +82,243 @@ def _generic_dict_to_markdown(data: Any, level: int = 1) -> str:
     return str(data)
 
 
+def _extract_templates_and_topics(
+    node_def: dict[str, Any],
+    workflow_spec: dict[str, Any],
+    state: dict[str, Any],
+) -> tuple[dict[str, list[str]], list[str]]:
+    """
+    Extracts templates (mapping of template/sheet name -> field list) and topic names from:
+    1. node_def ('templates', 'artifacts', 'outputs.templates', 'outputs.artifacts')
+    2. workflow_spec ('outputs.templates', 'outputs.artifacts', 'templates', 'artifacts')
+    3. state ('outputs.templates', 'outputs.artifacts')
+    """
+    raw_templates = None
+    raw_artifacts = None
+
+    # Check node_def
+    if isinstance(node_def.get("templates"), (list, dict)):
+        raw_templates = node_def.get("templates")
+    elif isinstance(node_def.get("outputs"), dict):
+        raw_templates = node_def["outputs"].get("templates")
+        raw_artifacts = node_def["outputs"].get("artifacts")
+
+    # Check workflow_spec
+    if not raw_templates and isinstance(workflow_spec, dict):
+        wf_outputs = workflow_spec.get("outputs")
+        if isinstance(wf_outputs, dict):
+            raw_templates = wf_outputs.get("templates")
+            if not raw_artifacts:
+                raw_artifacts = wf_outputs.get("artifacts")
+        elif isinstance(workflow_spec.get("templates"), (list, dict)):
+            raw_templates = workflow_spec["templates"]
+
+    # Check state
+    if not raw_templates and isinstance(state, dict):
+        st_outputs = state.get("outputs")
+        if isinstance(st_outputs, dict):
+            raw_templates = st_outputs.get("templates")
+            if not raw_artifacts:
+                raw_artifacts = st_outputs.get("artifacts")
+        elif isinstance(state.get("workflow"), dict):
+            wf_outs = state["workflow"].get("outputs", {})
+            if isinstance(wf_outs, dict):
+                raw_templates = wf_outs.get("templates")
+                if not raw_artifacts:
+                    raw_artifacts = wf_outs.get("artifacts")
+
+    # If raw_artifacts still not resolved
+    if not raw_artifacts:
+        if isinstance(node_def.get("artifacts"), (list, dict)):
+            raw_artifacts = node_def.get("artifacts")
+        elif isinstance(node_def.get("topics"), list):
+            raw_artifacts = node_def.get("topics")
+        elif isinstance(workflow_spec, dict) and isinstance(workflow_spec.get("artifacts"), list):
+            raw_artifacts = workflow_spec["artifacts"]
+
+    templates_dict: dict[str, list[str]] = {}
+    if isinstance(raw_templates, list):
+        for item in raw_templates:
+            if isinstance(item, dict):
+                for k, v in item.items():
+                    fields = [str(f).strip() for f in v] if isinstance(v, list) else []
+                    templates_dict[str(k).strip()] = fields
+            elif isinstance(item, str):
+                templates_dict[item.strip()] = []
+    elif isinstance(raw_templates, dict):
+        for k, v in raw_templates.items():
+            fields = [str(f).strip() for f in v] if isinstance(v, list) else []
+            templates_dict[str(k).strip()] = fields
+
+    topics: list[str] = list(templates_dict.keys())
+    if not topics and raw_artifacts:
+        if isinstance(raw_artifacts, list):
+            for item in raw_artifacts:
+                if isinstance(item, str) and item.strip():
+                    topics.append(item.strip())
+                elif isinstance(item, dict):
+                    label = (
+                        item.get("id")
+                        or item.get("name")
+                        or item.get("title")
+                        or item.get("topic")
+                        or item.get("key")
+                    )
+                    if label:
+                        topics.append(str(label).strip())
+        elif isinstance(raw_artifacts, dict):
+            topics = [str(k).strip() for k in raw_artifacts.keys() if str(k).strip()]
+
+    return templates_dict, topics
+
+
 def _extract_artifact_topics(
     node_def: dict[str, Any],
     workflow_spec: dict[str, Any],
     state: dict[str, Any],
 ) -> list[str]:
-    """
-    Extracts the list of required artifact topics/components from:
-    1. node_def ('artifacts' or 'outputs.artifacts' or 'topics')
-    2. workflow_spec ('outputs.artifacts' or 'artifacts')
-    3. state ('outputs.artifacts' or 'workflow.outputs.artifacts')
-    Returns an empty list if not specified.
-    """
-    raw_artifacts = None
-
-    # 1. Check node_def
-    if isinstance(node_def.get("artifacts"), (list, dict)):
-        raw_artifacts = node_def.get("artifacts")
-    elif isinstance(node_def.get("topics"), list):
-        raw_artifacts = node_def.get("topics")
-    elif isinstance(node_def.get("outputs"), dict) and "artifacts" in node_def["outputs"]:
-        raw_artifacts = node_def["outputs"]["artifacts"]
-
-    # 2. Check workflow_spec
-    if not raw_artifacts and isinstance(workflow_spec, dict):
-        wf_outputs = workflow_spec.get("outputs")
-        if isinstance(wf_outputs, dict) and "artifacts" in wf_outputs:
-            raw_artifacts = wf_outputs["artifacts"]
-        elif isinstance(wf_outputs, list):
-            raw_artifacts = wf_outputs
-        elif isinstance(workflow_spec.get("artifacts"), list):
-            raw_artifacts = workflow_spec["artifacts"]
-
-    # 3. Check state
-    if not raw_artifacts and isinstance(state, dict):
-        st_outputs = state.get("outputs")
-        if isinstance(st_outputs, dict) and "artifacts" in st_outputs:
-            raw_artifacts = st_outputs["artifacts"]
-        elif isinstance(st_outputs, list):
-            raw_artifacts = st_outputs
-        elif isinstance(state.get("workflow"), dict):
-            wf = state["workflow"]
-            wf_outs = wf.get("outputs")
-            if isinstance(wf_outs, dict) and "artifacts" in wf_outs:
-                raw_artifacts = wf_outs["artifacts"]
-            elif isinstance(wf_outs, list):
-                raw_artifacts = wf_outs
-
-    if not raw_artifacts:
-        return []
-
-    topics: list[str] = []
-    if isinstance(raw_artifacts, list):
-        for item in raw_artifacts:
-            if isinstance(item, str) and item.strip():
-                topics.append(item.strip())
-            elif isinstance(item, dict):
-                label = (
-                    item.get("id")
-                    or item.get("name")
-                    or item.get("title")
-                    or item.get("topic")
-                    or item.get("key")
-                )
-                if label:
-                    topics.append(str(label).strip())
-    elif isinstance(raw_artifacts, dict):
-        for k in raw_artifacts.keys():
-            if str(k).strip():
-                topics.append(str(k).strip())
-
+    _, topics = _extract_templates_and_topics(node_def, workflow_spec, state)
     return topics
+
+
+def _generate_excel_artifact(
+    target_file: Path,
+    templates_dict: dict[str, list[str]],
+    upstream_data: dict[str, Any],
+    metadata: dict[str, Any],
+) -> int:
+    """Generates a professional multi-sheet Excel (.xlsx) workbook based on templates structure."""
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    wb = openpyxl.Workbook()
+    # Remove default sheet
+    wb.remove(wb.active)
+
+    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
+    center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    left_align = Alignment(horizontal="left", vertical="center", wrap_text=True)
+    border_side = Side(border_style="thin", color="D9D9D9")
+    cell_border = Border(left=border_side, right=border_side, top=border_side, bottom=border_side)
+
+    # 1. Overview sheet
+    ws_meta = wb.create_sheet(title="Workflow Summary")
+    ws_meta.append(["Property", "Value"])
+    for cell in ws_meta[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_align
+
+    reference_val = metadata.get("story_id") or metadata.get("reference_id") or metadata.get("target_id") or "N/A"
+    ws_meta.append(["Reference / Target", str(reference_val)])
+    ws_meta.append(["Workflow ID", str(metadata.get("workflow_id", "N/A"))])
+    ws_meta.append(["Session ID", str(metadata.get("workflow_session_id", "N/A"))])
+    ws_meta.append(["Generated At", str(metadata.get("generated_at", "N/A"))])
+    ws_meta.append(["Node ID", str(metadata.get("node_id", "N/A"))])
+    if metadata.get("total_items") is not None:
+        ws_meta.append(["Context Items Count", str(metadata.get("total_items"))])
+
+    for row in ws_meta.iter_rows(min_row=2, max_row=ws_meta.max_row, min_col=1, max_col=2):
+        for cell in row:
+            cell.border = cell_border
+            cell.alignment = left_align
+
+    # 2. Add sheets for each template defined in outputs.templates
+    if not templates_dict:
+        # Fallback default sheets
+        templates_dict = {
+            "test_cases": ["test_id", "test_title", "test_type", "expected_result", "status"],
+            "coverage_matrix": ["module", "impact_area", "test_id"],
+        }
+
+    for template_name, fields in templates_dict.items():
+        # Sheet title max 31 chars in Excel
+        sheet_title = (
+            template_name.replace("_template", "")
+            .replace("_sheet", "")
+            .replace("_", " ")
+            .title()[:30]
+        )
+        ws = wb.create_sheet(title=sheet_title)
+
+        # Write header row
+        headers = [f.replace("_", " ").title() for f in fields] if fields else ["Attribute", "Value"]
+        ws.append(headers)
+
+        for col_idx, cell in enumerate(ws[1], start=1):
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = center_align
+
+        # Populate rows intelligently from upstream_data
+        matched_records = []
+        for k, v in upstream_data.items():
+            clean_k = k.lower().replace("-", "_")
+            if (
+                clean_k in template_name
+                or template_name in clean_k
+                or ("test" in template_name and "test" in clean_k)
+                or ("matrix" in template_name and "matrix" in clean_k)
+                or ("gap" in template_name and ("gap" in clean_k or "assumption" in clean_k))
+            ):
+                if isinstance(v, list):
+                    matched_records.extend(v)
+                elif isinstance(v, dict):
+                    for sub_v in v.values():
+                        if isinstance(sub_v, list):
+                            matched_records.extend(sub_v)
+                        elif isinstance(sub_v, dict):
+                            matched_records.append(sub_v)
+                    if not matched_records:
+                        matched_records.append(v)
+
+        if matched_records:
+            for rec in matched_records:
+                if isinstance(rec, dict):
+                    row_vals = []
+                    for f in fields:
+                        # find matching key
+                        val = rec.get(f) or rec.get(f.replace("_", " ")) or rec.get(f.title()) or ""
+                        if not val:
+                            for rk, rv in rec.items():
+                                if rk.lower().replace("_", "") == f.lower().replace("_", ""):
+                                    val = rv
+                                    break
+                        if isinstance(val, (dict, list)):
+                            val = json.dumps(val)
+                        row_vals.append(str(val) if val is not None else "")
+                    ws.append(row_vals)
+                else:
+                    ws.append([str(rec)] + [""] * (len(fields) - 1 if fields else 0))
+        else:
+            # If no structured records matched, provide informative placeholder row
+            sample_row = []
+            for f in fields:
+                sample_row.append(f"Auto-generated for {f.replace('_', ' ').title()}")
+            if sample_row:
+                ws.append(sample_row)
+
+        # Apply borders and column width autosizing
+        for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=len(headers)):
+            for cell in row:
+                cell.border = cell_border
+                cell.alignment = left_align
+
+        for col in ws.columns:
+            max_len = max(len(str(cell.value or "")) for cell in col)
+            col_letter = get_column_letter(col[0].column)
+            ws.column_dimensions[col_letter].width = max(max_len + 4, 15)
+
+    for col in ws_meta.columns:
+        max_len = max(len(str(cell.value or "")) for cell in col)
+        col_letter = get_column_letter(col[0].column)
+        ws_meta.column_dimensions[col_letter].width = max(max_len + 4, 20)
+
+    target_file.parent.mkdir(parents=True, exist_ok=True)
+    wb.save(target_file)
+    return target_file.stat().st_size
 
 
 def _generate_markdown_artifact_via_llm(
@@ -168,6 +342,8 @@ def _generate_markdown_artifact_via_llm(
 
     story_id = metadata.get("story_id", "Workflow-Artifact")
     data_summary = json.dumps(upstream_data, indent=2, default=str)
+    workflow_id = metadata.get("workflow_id") or "Workflow"
+    target_id = metadata.get("story_id") or metadata.get("reference_id") or "Workflow Result"
 
     if artifact_topics:
         topics_bullet_list = "\n".join(
@@ -175,16 +351,16 @@ def _generate_markdown_artifact_via_llm(
         )
         system_msg = (
             custom_system_prompt
-            or "You are an expert Technical Documentation and QE Artifact Synthesis Agent.\n"
-            "Your task is to take the accumulated workflow data, test package details, and architectural signals, "
-            "and synthesize a comprehensive, clean, beautifully-structured Markdown (.md) document.\n\n"
+            or "You are an expert Technical Documentation and Artifact Synthesis Agent.\n"
+            "Your task is to take accumulated workflow execution data, context, and upstream node results, "
+            "and synthesize a comprehensive, clean, beautifully structured Markdown (.md) document.\n\n"
             "CRITICAL REQUIREMENT - Document Structure:\n"
-            "The artifact MUST strictly be organized into dedicated sections based on the following required topics specified in the workflow outputs:\n"
+            "The artifact MUST strictly be organized into dedicated sections based on the following required topics specified in the workflow definition:\n"
             f"{topics_bullet_list}\n\n"
             "Guidelines:\n"
-            "- Generate standard Markdown only. Do not wrap the response in markdown code blocks unless requested.\n"
+            "- Generate standard Markdown only. Do not wrap the entire response in markdown code blocks unless requested.\n"
             "- Structure the document using primary Markdown headings (##) corresponding to each of the required topics listed above.\n"
-            "- Populate each section thoroughly based on the upstream node outputs, context, and drafted test data.\n"
+            "- Populate each section thoroughly based on the upstream node outputs, context, and findings.\n"
             "- Use clean formatting: headers (#, ##, ###), bullet lists, bold text, and markdown tables where appropriate."
         )
 
@@ -195,22 +371,21 @@ def _generate_markdown_artifact_via_llm(
             custom_user_prompt
             or f"Workflow Metadata:\n{json.dumps(metadata, indent=2)}\n\n"
             f"Upstream Node Outputs and Context:\n{data_summary}\n\n"
-            f"Generate the comprehensive Markdown artifact for {story_id}.\n"
+            f"Generate the comprehensive Markdown artifact for {target_id} in workflow `{workflow_id}`.\n"
             f"The document structure MUST include the following specific sections corresponding to the required artifact topics:\n"
             f"{topics_numbered}\n\n"
-            f"Synthesize the content for each section using the upstream node outputs, context, and drafted tests provided above."
+            f"Synthesize the content for each section using the upstream node outputs and context provided above."
         )
     else:
-        # Default prompt when no artifact topics are listed in outputs.artifacts
+        # Default prompt when no artifact topics are listed: derive generic structure
         system_msg = (
             custom_system_prompt
-            or "You are an expert Technical Documentation and QE Artifact Synthesis Agent.\n"
-            "Your task is to take the accumulated workflow data, test package details, and architectural signals, "
-            "and synthesize a comprehensive, clean, beautifully-structured Markdown (.md) document.\n\n"
+            or "You are an expert Technical Documentation and Artifact Synthesis Agent.\n"
+            "Your task is to synthesize the provided workflow execution state, inputs, and upstream node outputs "
+            "into a comprehensive, well-structured, professional Markdown (.md) document.\n\n"
             "Guidelines:\n"
-            "- Generate standard Markdown only. Do not wrap the response in markdown code blocks unless requested.\n"
-            "- Include an Executive Summary, Acceptance Criteria Traceability, Complete Test Cases (with tables or step lists), "
-            "Regression Scope, and Risk Mitigations.\n"
+            "- Generate standard Markdown only.\n"
+            "- Structure the document logically based on the workflow context and execution results (e.g., Executive Summary, Context & Inputs, Key Findings & Execution Details, Recommendations / Next Steps).\n"
             "- Use clean formatting: headers (#, ##, ###), bullet lists, bold text, and markdown tables where appropriate."
         )
 
@@ -218,7 +393,7 @@ def _generate_markdown_artifact_via_llm(
             custom_user_prompt
             or f"Workflow Metadata:\n{json.dumps(metadata, indent=2)}\n\n"
             f"Upstream Node Outputs and Context:\n{data_summary}\n\n"
-            f"Generate the comprehensive Markdown artifact for {story_id}:"
+            f"Generate the comprehensive Markdown artifact for {target_id} in workflow `{workflow_id}`."
         )
 
     try:
@@ -355,13 +530,31 @@ def create_artifact_node(
         state["status"] = "running"
         state["current_node"] = node_id
 
-        # 1. Resolve Story and Reference ID dynamically
+        # 1. Resolve Story and Reference ID dynamically without assuming single story
         validated_inputs = state.get("validated_inputs", {})
+        story_ids = []
+        if isinstance(validated_inputs, list):
+            for it in validated_inputs:
+                if isinstance(it, dict):
+                    for k in ["jira_story_or_epic_id", "id", "key", "story_id", "ticket_id", "reference_id"]:
+                        if it.get(k):
+                            story_ids.append(str(it[k]))
+                            break
+        elif isinstance(validated_inputs, dict):
+            for k in ["jira_story_or_epic_id", "id", "key", "story_id", "ticket_id", "reference_id"]:
+                if validated_inputs.get(k):
+                    story_ids.append(str(validated_inputs[k]))
+                    break
+
+        resolved_ref = ", ".join(story_ids) if story_ids else None
         story_id = (
             node_def.get("story_id")
-            or validated_inputs.get("jira_story_or_epic_id")
+            or node_def.get("reference_id")
+            or resolved_ref
             or state.get("story_id")
-            or "CHK-100"
+            or state.get("reference_id")
+            or state.get("workflow_id")
+            or "artifact"
         )
         timestamp_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
@@ -370,68 +563,141 @@ def create_artifact_node(
 
         metadata = {
             "story_id": story_id,
+            "reference_id": story_id,
             "node_id": node_id,
-            "workflow_id": state.get("workflow_id", "QE-201-draft-test-cases-from-jira"),
+            "workflow_id": state.get("workflow_id"),
             "workflow_session_id": state.get("workflow_session_id", "N/A"),
             "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "total_items": len(validated_inputs) if isinstance(validated_inputs, list) else (1 if validated_inputs else 0),
         }
 
-        # Extract artifact topics if specified in workflow outputs or node_def
-        artifact_topics = _extract_artifact_topics(node_def, workflow_spec, state)
+        # Extract templates and artifact topics
+        templates_dict, artifact_topics = _extract_templates_and_topics(node_def, workflow_spec, state)
 
-        # 3. Generate Markdown content
-        engine_used = "dynamic_serializer"
-        if use_llm:
-            markdown_content, engine_used = _generate_markdown_artifact_via_llm(
-                upstream_data=upstream_data,
-                metadata=metadata,
-                custom_system_prompt=custom_system_prompt,
-                custom_user_prompt=custom_user_prompt,
-                config_path=custom_config_path,
-                artifact_topics=artifact_topics if artifact_topics else None,
-            )
+        # Determine target extension (.xlsx or .md)
+        # Default to xlsx if requested, if templates are defined, or if output_format is excel/xlsx
+        output_format = (
+            node_def.get("format")
+            or node_def.get("output_format")
+            or (workflow_spec.get("outputs", {}).get("format") if isinstance(workflow_spec, dict) else None)
+            or (state.get("outputs", {}).get("format") if isinstance(state.get("outputs"), dict) else None)
+        )
+        if output_format:
+            output_format = str(output_format).lower()
         else:
-            markdown_content = _build_fallback_markdown(
-                upstream_data=upstream_data,
-                metadata=metadata,
-                artifact_topics=artifact_topics if artifact_topics else None,
-            )
+            # Check inputs or preferences
+            user_pref = ""
+            val_in = state.get("validated_inputs")
+            if isinstance(val_in, dict):
+                user_pref = val_in.get("output_preference") or ""
+            elif isinstance(val_in, list) and val_in:
+                for item in val_in:
+                    if isinstance(item, dict) and item.get("output_preference"):
+                        user_pref = item["output_preference"]
+                        break
+            if not user_pref:
+                user_pref = state.get("output_preference") or ""
+            if "excel" in str(user_pref).lower() or bool(templates_dict):
+                output_format = "xlsx"
+            elif artifact_topics and not templates_dict:
+                output_format = "md"
+            else:
+                output_format = "xlsx" if (custom_filename_template and custom_filename_template.endswith(".xlsx")) else "xlsx"
 
-        # 4. Determine target file path (ensuring .md extension)
+        artifact_dir.mkdir(parents=True, exist_ok=True)
+
         if custom_filename_template:
             fname = custom_filename_template.format(
                 story_id=story_id,
                 node_id=node_id,
                 timestamp=timestamp_str,
             )
-            if not fname.endswith(".md"):
+            if output_format in {"xlsx", "excel"} and not fname.endswith(".xlsx"):
+                fname = re.sub(r"\.[^.]+$", "", fname) + ".xlsx"
+            elif output_format in {"md", "markdown"} and not fname.endswith(".md"):
                 fname = re.sub(r"\.[^.]+$", "", fname) + ".md"
         else:
-            fname = f"{story_id}_artifact.md"
+            safe_name = re.sub(r'[\\/*?:"<>|,\s]+', "_", story_id).strip("_")[:40] or "artifact"
+            ext = ".xlsx" if output_format in {"xlsx", "excel"} else ".md"
+            fname = f"{safe_name}_artifact{ext}"
 
-        artifact_dir.mkdir(parents=True, exist_ok=True)
         target_file = artifact_dir / fname
 
-        # 5. Write the Markdown (.md) artifact file to disk
-        try:
-            with target_file.open("w", encoding="utf-8") as f:
-                f.write(markdown_content)
-            file_size = target_file.stat().st_size
-            logger.info("Successfully created Markdown artifact at %s (%d bytes)", target_file, file_size)
-        except Exception as exc:
-            logger.error("Failed to write Markdown artifact file to %s: %s", target_file, exc)
-            file_size = 0
+        engine_used = "dynamic_excel_generator" if fname.endswith(".xlsx") else "dynamic_serializer"
+        markdown_content = ""
 
-        # 6. Save artifact references into state
+        if fname.endswith(".xlsx"):
+            # 3a. Generate Excel Workbook
+            try:
+                file_size = _generate_excel_artifact(
+                    target_file=target_file,
+                    templates_dict=templates_dict,
+                    upstream_data=upstream_data,
+                    metadata=metadata,
+                )
+                engine_used = "openpyxl_workbook"
+                logger.info("Successfully created Excel artifact at %s (%d bytes)", target_file, file_size)
+            except PermissionError:
+                # File may be open in another application (e.g. Excel)
+                alt_fname = f"{target_file.stem}_{int(datetime.datetime.now().timestamp())}.xlsx"
+                alt_target_file = artifact_dir / alt_fname
+                logger.warning("Target file %s locked/in-use; writing to %s instead", target_file, alt_target_file)
+                try:
+                    file_size = _generate_excel_artifact(
+                        target_file=alt_target_file,
+                        templates_dict=templates_dict,
+                        upstream_data=upstream_data,
+                        metadata=metadata,
+                    )
+                    target_file = alt_target_file
+                    engine_used = "openpyxl_workbook"
+                    logger.info("Successfully created Excel artifact at %s (%d bytes)", target_file, file_size)
+                except Exception as inner_exc:
+                    logger.error("Failed to write Excel artifact to %s: %s", alt_target_file, inner_exc)
+                    file_size = 0
+                    engine_used = f"excel_error: {inner_exc}"
+            except Exception as exc:
+                logger.error("Failed to write Excel artifact to %s: %s", target_file, exc)
+                file_size = 0
+                engine_used = f"excel_error: {exc}"
+        else:
+            # 3b. Generate Markdown Document
+            if use_llm:
+                markdown_content, engine_used = _generate_markdown_artifact_via_llm(
+                    upstream_data=upstream_data,
+                    metadata=metadata,
+                    custom_system_prompt=custom_system_prompt,
+                    custom_user_prompt=custom_user_prompt,
+                    config_path=custom_config_path,
+                    artifact_topics=artifact_topics if artifact_topics else None,
+                )
+            else:
+                markdown_content = _build_fallback_markdown(
+                    upstream_data=upstream_data,
+                    metadata=metadata,
+                    artifact_topics=artifact_topics if artifact_topics else None,
+                )
+
+            try:
+                with target_file.open("w", encoding="utf-8") as f:
+                    f.write(markdown_content)
+                file_size = target_file.stat().st_size
+                logger.info("Successfully created Markdown artifact at %s (%d bytes)", target_file, file_size)
+            except Exception as exc:
+                logger.error("Failed to write Markdown artifact file to %s: %s", target_file, exc)
+                file_size = 0
+
+        # 4. Save artifact references into state
         artifact_record = {
             "artifact_file": target_file.name,
             "artifact_path": str(target_file),
-            "format": "markdown",
+            "format": "xlsx" if target_file.name.endswith(".xlsx") else "markdown",
             "file_size_bytes": file_size,
             "engine": engine_used,
             "metadata": metadata,
             "content": markdown_content,
         }
+
         if artifact_topics:
             artifact_record["topics"] = artifact_topics
             for topic in artifact_topics:
@@ -442,7 +708,12 @@ def create_artifact_node(
                 }
                 if topic == "excel_export_file":
                     t_entry["workbook_name"] = f"{story_id}_test_cases.xlsx"
+                elif "excel" in topic or target_file.name.endswith(".xlsx"):
+                    t_entry["workbook_name"] = target_file.name
                 artifact_record[topic] = t_entry
+
+        if templates_dict:
+            artifact_record["templates"] = list(templates_dict.keys())
 
         state["artifacts"] = artifact_record
         state["artifact_path"] = str(target_file)
@@ -458,11 +729,13 @@ def create_artifact_node(
             "artifact_path": str(target_file),
             "file_size_bytes": file_size,
             "engine": engine_used,
+            "format": "xlsx" if target_file.name.endswith(".xlsx") else "markdown",
             "topics": artifact_topics if artifact_topics else None,
+            "templates": list(templates_dict.keys()) if templates_dict else None,
             "summary": (
-                f"Created Markdown artifact in '{artifact_dir.name}/{target_file.name}' "
+                f"Created {target_file.suffix} artifact in '{artifact_dir.name}/{target_file.name}' "
                 f"({file_size} bytes via {engine_used})"
-                + (f" with {len(artifact_topics)} topics." if artifact_topics else ".")
+                + (f" with {len(templates_dict)} template sheets." if templates_dict else ".")
             ),
         }
 

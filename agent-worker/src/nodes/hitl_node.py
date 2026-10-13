@@ -19,8 +19,17 @@ def create_hitl_node(
         rework_count = state.get("rework_count", 0)
         artifacts = state.get("artifacts", {})
         drafted = state.get("drafted_tests", {})
-        validated_inputs = state.get("validated_inputs", {})
-        story_id = validated_inputs.get("jira_story_or_epic_id", "CHK-100")
+        validated_inputs = state.get("validated_inputs")
+        def _resolve_val(key: str, default: str) -> str:
+            if isinstance(validated_inputs, dict):
+                return str(validated_inputs.get(key, default))
+            elif isinstance(validated_inputs, list) and validated_inputs:
+                for it in validated_inputs:
+                    if isinstance(it, dict) and it.get(key):
+                        return str(it[key])
+            return default
+
+        story_id = _resolve_val("jira_story_or_epic_id", state.get("workflow_id", "CHK-100"))
 
         review_package = {
             "story_id": story_id,
