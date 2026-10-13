@@ -1,0 +1,31 @@
+[
+  {
+    "jira_story_or_epic_id": "AIDLC-102",
+    "acceptance_criteria": "- Verify PII masking on boundary edge cases: concatenated phone numbers without dashes, international passport numbers, and synthetic SSNs.\n- Verify p95 latency stays under 45ms under a load of 500 concurrent requests/sec.\n- Test resilience when the downstream toxicity classifier service returns HTTP 500 or times out (>100ms fail-open vs fail-closed policy).",
+    "test_scope_and_type": "boundary_and_nfr",
+    "target_application_and_env": "AIDLC Inference Gateway Service / Staging",
+    "output_preference": "xray_record"
+  },
+  {
+    "jira_story_or_epic_id": "AIDLC-101",
+    "acceptance_criteria": "- Negative: Input dataset with malformed JSONL rows must fail gracefully with line-numbered error reports.\n- Negative: Rate limit (HTTP 429) from judge model API must trigger exponential backoff up to 3 retries before marking the job paused.\n- Functional: Aggregate scoring must correctly calculate weighted averages across Hallucination, Tone, and Instruction Following rubrics.",
+    "test_scope_and_type": "functional_and_negative",
+    "target_application_and_env": "AIDLC Eval Engine / Dev-Cluster-02",
+    "output_preference": "xray_and_excel"
+  },
+  {
+    "jira_story_or_epic_id": "AIDLC-100",
+    "acceptance_criteria": null,
+    "test_scope_and_type": "full_impact_and_regression",
+    "target_application_and_env": "auto_resolve_from_jira",
+    "output_preference": "excel_export"
+  },
+  {
+    "jira_story_or_epic_id": "AIDLC-106",
+    "acceptance_criteria": "- Sanity check: Ensure datasets containing empty strings (\"\") or null values in 'reference_output' are blocked during pre-flight upload validation.\n- Smoke check: Run a 10-row benchmark to ensure valid datasets calculate BLEU/ROUGE metrics normally without false-positive 100% scores.",
+    "test_scope_and_type": "smoke_and_sanity",
+    "target_application_and_env": "AIDLC Eval Service / QA-Env",
+    "output_preference": "xray_record"
+  }
+]
+
