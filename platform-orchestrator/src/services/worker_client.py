@@ -12,10 +12,16 @@ class AgentWorkerClient:
     Includes in-process dummy/mock fallback for isolated local testing.
     """
 
-    def __init__(self, base_url: Optional[str] = None, use_mock: bool = False):
+    def __init__(
+        self,
+        base_url: Optional[str] = None,
+        use_mock: bool = False,
+        app: Optional[Any] = None
+    ):
         self.base_url = base_url or settings.worker_service_url
         self.timeout = settings.worker_timeout_seconds
         self.use_mock = use_mock
+        self.app = app
 
     async def dispatch_workflow(
         self,
@@ -43,11 +49,17 @@ class AgentWorkerClient:
         }
 
         try:
-            timeout_cfg = httpx.Timeout(self.timeout, connect=0.5)
-            async with httpx.AsyncClient(timeout=timeout_cfg) as client:
-                res = await client.post(f"{self.base_url}/worker/dispatch", json=payload, headers=headers)
-                if res.status_code == 200:
-                    return res.json()
+            if self.app is not None:
+                async with httpx.AsyncClient(app=self.app, base_url="http://testserver", timeout=self.timeout) as client:
+                    res = await client.post("/worker/dispatch", json=payload, headers=headers)
+                    if res.status_code == 200:
+                        return res.json()
+            else:
+                timeout_cfg = httpx.Timeout(self.timeout, connect=5.0)
+                async with httpx.AsyncClient(timeout=timeout_cfg) as client:
+                    res = await client.post(f"{self.base_url}/worker/dispatch", json=payload, headers=headers)
+                    if res.status_code == 200:
+                        return res.json()
         except Exception as e:
             logger.warning(
                 f"Agent Worker service unreachable at {self.base_url}/worker/dispatch: {e}. Utilizing local mock worker fallback.",
@@ -79,11 +91,17 @@ class AgentWorkerClient:
         }
 
         try:
-            timeout_cfg = httpx.Timeout(self.timeout, connect=0.5)
-            async with httpx.AsyncClient(timeout=timeout_cfg) as client:
-                res = await client.post(f"{self.base_url}/worker/resume", json=payload, headers=headers)
-                if res.status_code == 200:
-                    return res.json()
+            if self.app is not None:
+                async with httpx.AsyncClient(app=self.app, base_url="http://testserver", timeout=self.timeout) as client:
+                    res = await client.post("/worker/resume", json=payload, headers=headers)
+                    if res.status_code == 200:
+                        return res.json()
+            else:
+                timeout_cfg = httpx.Timeout(self.timeout, connect=5.0)
+                async with httpx.AsyncClient(timeout=timeout_cfg) as client:
+                    res = await client.post(f"{self.base_url}/worker/resume", json=payload, headers=headers)
+                    if res.status_code == 200:
+                        return res.json()
         except Exception as e:
             logger.warning(
                 f"Agent Worker service unreachable at {self.base_url}/worker/resume: {e}. Utilizing local mock worker fallback.",
